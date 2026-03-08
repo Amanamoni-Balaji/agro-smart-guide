@@ -1,1 +1,10 @@
 project_id = "ksprrdvepttoqhgqwsaw"
+
+[functions.detect-disease]
+verify_jwt = false
+
+[functions.farming-chat]
+verify_jwt = false
+
+[functions.weather-crop-suggest]
+verify_jwt = false

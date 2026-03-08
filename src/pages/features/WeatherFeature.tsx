@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { indianLocations } from "@/data/indianLocations";
 
 interface WeatherData {
   temperature: number;
@@ -19,20 +20,12 @@ interface WeatherData {
   suggestedCrops: { name: string; reason: string }[];
 }
 
-interface LocationSuggestion {
-  display_name: string;
-  lat: string;
-  lon: string;
-}
-
 const WeatherFeature = () => {
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestLoading, setSuggestLoading] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -47,39 +40,26 @@ const WeatherFeature = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const fetchSuggestions = async (query: string) => {
-    if (query.length < 2) {
+  const handleInputChange = (value: string) => {
+    setLocation(value);
+    if (value.length < 1) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
     }
-    setSuggestLoading(true);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&limit=5&q=${encodeURIComponent(query)}`
-      );
-      const data: LocationSuggestion[] = await res.json();
-      setSuggestions(data);
-      setShowSuggestions(data.length > 0);
-    } catch {
-      setSuggestions([]);
-    } finally {
-      setSuggestLoading(false);
-    }
+    const lower = value.toLowerCase();
+    const matches = indianLocations
+      .filter((loc) => loc.toLowerCase().includes(lower))
+      .slice(0, 8);
+    setSuggestions(matches);
+    setShowSuggestions(matches.length > 0);
   };
 
-  const handleInputChange = (value: string) => {
-    setLocation(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchSuggestions(value), 300);
-  };
-
-  const selectSuggestion = (s: LocationSuggestion) => {
-    const name = s.display_name.split(",").slice(0, 3).join(", ");
-    setLocation(name);
+  const selectSuggestion = (loc: string) => {
+    setLocation(loc);
     setShowSuggestions(false);
     setSuggestions([]);
-    fetchWeather(name);
+    fetchWeather(loc);
   };
 
   const fetchWeather = async (loc: string) => {
@@ -123,6 +103,20 @@ const WeatherFeature = () => {
     );
   };
 
+  // Highlight matching text in suggestion
+  const highlightMatch = (text: string, query: string) => {
+    if (!query) return text;
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <span className="font-bold text-primary">{text.slice(idx, idx + query.length)}</span>
+        {text.slice(idx + query.length)}
+      </>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -146,7 +140,12 @@ const WeatherFeature = () => {
                     placeholder="Search city, district, or state..."
                     value={location}
                     onChange={(e) => handleInputChange(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setShowSuggestions(false);
+                        handleSearch();
+                      }
+                    }}
                     onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                     className="pl-9"
                   />
@@ -157,27 +156,20 @@ const WeatherFeature = () => {
               </div>
 
               {showSuggestions && (
-                <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden">
-                  {suggestLoading && (
-                    <div className="px-4 py-3 text-sm text-muted-foreground flex items-center gap-2">
-                      <Loader2 className="h-3 w-3 animate-spin" /> Searching...
-                    </div>
-                  )}
+                <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden max-h-[320px] overflow-y-auto">
                   {suggestions.map((s, i) => {
-                    const parts = s.display_name.split(", ");
-                    const primary = parts.slice(0, 2).join(", ");
-                    const secondary = parts.slice(2).join(", ");
+                    const [city, state] = s.split(", ");
                     return (
                       <button
                         key={i}
-                        className="w-full text-left px-4 py-3 hover:bg-muted/60 transition-colors flex items-start gap-3 border-b border-border last:border-0"
+                        className="w-full text-left px-4 py-3 hover:bg-muted/60 transition-colors flex items-center gap-3 border-b border-border last:border-0"
                         onClick={() => selectSuggestion(s)}
                       >
-                        <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <MapPin className="h-4 w-4 text-primary shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{primary}</p>
-                          {secondary && (
-                            <p className="text-xs text-muted-foreground truncate">{secondary}</p>
+                          <span className="text-sm">{highlightMatch(city, location)}</span>
+                          {state && (
+                            <span className="text-xs text-muted-foreground ml-1.5">{state}</span>
                           )}
                         </div>
                       </button>

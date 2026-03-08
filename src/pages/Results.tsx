@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2, Medal } from "lucide-react";
+import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2, Medal, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { recommendCropsFromDataset } from "@/data/cropDataset";
-import { useMemo } from "react";
+import { recommendCropsKNN, getDisplayName, getCropDetails } from "@/data/cropDataset";
+import { useState, useEffect } from "react";
 
 const mockDiseaseResult = {
   disease: "Bacterial Leaf Blight",
@@ -20,15 +20,27 @@ const mockDiseaseResult = {
   fertilizer: "Reduce Urea; increase Potash (MOP) to strengthen plant immunity.",
 };
 
+type Recommendation = {
+  label: string;
+  displayName: string;
+  confidence: string;
+  reason: string;
+  details: ReturnType<typeof getCropDetails>;
+};
+
 const Results = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as any;
   const isDisease = state?.mode === "disease";
 
-  const recommendations = useMemo(() => {
-    if (isDisease || !state) return [];
-    return recommendCropsFromDataset({
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [loading, setLoading] = useState(!isDisease);
+
+  useEffect(() => {
+    if (isDisease || !state) return;
+    setLoading(true);
+    recommendCropsKNN({
       nitrogen: state.nitrogen ? parseFloat(state.nitrogen) : undefined,
       phosphorus: state.phosphorus ? parseFloat(state.phosphorus) : undefined,
       potassium: state.potassium ? parseFloat(state.potassium) : undefined,
@@ -36,6 +48,9 @@ const Results = () => {
       humidity: state.humidity ? parseFloat(state.humidity) : undefined,
       ph: state.ph ? parseFloat(state.ph) : undefined,
       rainfall: state.rainfall ? parseFloat(state.rainfall) : undefined,
+    }).then((results) => {
+      setRecommendations(results);
+      setLoading(false);
     });
   }, [state, isDisease]);
 
@@ -87,6 +102,11 @@ const Results = () => {
               </h2>
               <p className="text-sm text-muted-foreground">{mockDiseaseResult.fertilizer}</p>
             </div>
+          </div>
+        ) : loading ? (
+          <div className="text-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-3" />
+            <p className="text-muted-foreground">Analyzing your data against 2200+ crop samples...</p>
           </div>
         ) : topCrop ? (
           <div className="space-y-6 animate-fade-in">

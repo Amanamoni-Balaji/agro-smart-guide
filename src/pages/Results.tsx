@@ -133,11 +133,11 @@ const Results = () => {
                 <Calendar className="h-5 w-5 text-[hsl(var(--agro-gold))]" /> Crop Schedule — {topCrop.displayName}
               </h2>
               <div className="space-y-4">
-                {topCrop.crop.schedule.map((s, i) => (
+                {topCrop.details.schedule.map((s, i) => (
                   <div key={i} className="flex gap-4 items-start">
                     <div className="flex flex-col items-center">
                       <div className="w-3 h-3 rounded-full bg-primary" />
-                      {i < topCrop.crop.schedule.length - 1 && <div className="w-0.5 h-10 bg-border" />}
+                      {i < topCrop.details.schedule.length - 1 && <div className="w-0.5 h-10 bg-border" />}
                     </div>
                     <div>
                       <p className="font-semibold text-sm">{s.step} <span className="text-muted-foreground font-normal">— {s.time}</span></p>

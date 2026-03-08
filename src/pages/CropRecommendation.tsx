@@ -28,6 +28,7 @@ const CropRecommendation = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container py-12">
+        <BackButton />
         <h1 className="text-3xl font-heading font-extrabold text-center mb-2">Crop Recommendation</h1>
         <p className="text-center text-muted-foreground mb-10">Choose your preferred input mode</p>
 

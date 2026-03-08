@@ -30,6 +30,7 @@ const AdvancedMode = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container py-12 max-w-lg">
+        <BackButton />
         <h1 className="text-2xl font-heading font-extrabold text-center mb-8">Advanced Mode — Crop Recommendation</h1>
         <form onSubmit={handleSubmit} className="space-y-4 gradient-card rounded-xl border border-border shadow-card p-8 animate-fade-in">
           {fields.map((f) => (

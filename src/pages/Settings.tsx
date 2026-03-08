@@ -27,7 +27,7 @@ const Settings = () => {
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 gap-2">
           <ArrowLeft className="h-4 w-4" /> {t('back')}
         </Button>
-        <h1 className="text-2xl font-heading font-extrabold mb-8 flex items-center gap-2">
+        <h1 className="text-2xl font-heading font-extrabold mb-2 flex items-center gap-2">
           <Globe className="h-6 w-6 text-primary" /> {t('settings')}
         </h1>
         <div className="gradient-card rounded-xl border border-border shadow-card p-8 space-y-6 animate-fade-in">

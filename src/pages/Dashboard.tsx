@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Sprout, Bug } from "lucide-react";
+import { Sprout, Bug, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Header from "@/components/Header";
@@ -29,6 +29,14 @@ const Dashboard = () => {
       path: "/disease",
       color: "from-secondary to-agro-sky",
     },
+    {
+      title: "Additional Features",
+      desc: "Explore weather integration, voice input, SMS alerts, crop schedules, and more advanced tools.",
+      icon: Sparkles,
+      img: null,
+      path: "/features",
+      color: "from-accent to-primary",
+    },
   ];
 
   return (
@@ -41,7 +49,7 @@ const Dashboard = () => {
         <p className="text-center text-muted-foreground mb-10 animate-fade-in" style={{ animationDelay: "0.1s" }}>
           {t('chooseService')}
         </p>
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {cards.map((c, i) => (
             <button
               key={c.title}
@@ -49,7 +57,13 @@ const Dashboard = () => {
               className="group gradient-card rounded-xl border border-border shadow-card hover:shadow-agro transition-all p-6 text-left animate-fade-in flex flex-col items-center gap-4"
               style={{ animationDelay: `${i * 0.2}s` }}
             >
-              <img src={c.img} alt={c.title} className="w-40 h-40 object-contain group-hover:scale-110 transition-transform" />
+              {c.img ? (
+                <img src={c.img} alt={c.title} className="w-40 h-40 object-contain group-hover:scale-110 transition-transform" />
+              ) : (
+                <div className={`w-40 h-40 rounded-full bg-gradient-to-br ${c.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <c.icon className="h-16 w-16 text-primary-foreground" />
+                </div>
+              )}
               <div className="flex items-center gap-3">
                 <div className={`rounded-full p-2 bg-gradient-to-br ${c.color}`}>
                   <c.icon className="h-6 w-6 text-primary-foreground" />

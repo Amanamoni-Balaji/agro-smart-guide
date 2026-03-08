@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 const soilTypes = ["Black Soil", "Red Soil", "Alluvial Soil", "Laterite Soil", "Sandy Soil", "Clay Soil", "Loamy Soil"];
 const seasons = ["Kharif (Monsoon)", "Rabi (Winter)", "Zaid (Summer)"];
@@ -23,6 +24,7 @@ const SimpleMode = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container py-12 max-w-lg">
+        <BackButton />
         <h1 className="text-2xl font-heading font-extrabold text-center mb-8">Simple Mode — Crop Recommendation</h1>
         <form onSubmit={handleSubmit} className="space-y-5 gradient-card rounded-xl border border-border shadow-card p-8 animate-fade-in">
           <div>

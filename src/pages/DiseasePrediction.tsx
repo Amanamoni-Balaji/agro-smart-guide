@@ -4,6 +4,7 @@ import { Camera, Upload, ImageIcon, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 const DiseasePrediction = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const DiseasePrediction = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container py-12 max-w-lg">
+        <BackButton />
         <h1 className="text-2xl font-heading font-extrabold text-center mb-2">Crop Disease Prediction</h1>
         <p className="text-center text-muted-foreground mb-8">Upload or capture a photo of the affected crop</p>
 

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 const fields = [
   { key: "nitrogen", label: "Nitrogen (N) %", placeholder: "e.g. 40" },
@@ -29,6 +30,7 @@ const AdvancedMode = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container py-12 max-w-lg">
+        <BackButton />
         <h1 className="text-2xl font-heading font-extrabold text-center mb-8">Advanced Mode — Crop Recommendation</h1>
         <form onSubmit={handleSubmit} className="space-y-4 gradient-card rounded-xl border border-border shadow-card p-8 animate-fade-in">
           {fields.map((f) => (

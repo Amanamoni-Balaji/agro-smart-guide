@@ -1,25 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2, Medal, Loader2, BarChart3 } from "lucide-react";
+import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2, Medal, Loader2, BarChart3, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Progress } from "@/components/ui/progress";
 import { recommendCropsKNN, recommendCropsSimple, getDisplayName, getCropDetails } from "@/data/cropDataset";
 import type { SimpleRecommendation } from "@/data/cropDataset";
 import { useState, useEffect } from "react";
-
-const mockDiseaseResult = {
-  disease: "Bacterial Leaf Blight",
-  stage: "Moderate (Stage 2 of 4)",
-  infection: "35% of leaf area affected",
-  prevention: [
-    "Remove and destroy infected leaves immediately.",
-    "Apply copper-based bactericide (Copper oxychloride 50% WP at 2.5g/L).",
-    "Avoid excess nitrogen fertilizer.",
-    "Ensure proper drainage to reduce humidity.",
-    "Use resistant varieties for next planting cycle.",
-  ],
-  fertilizer: "Reduce Urea; increase Potash (MOP) to strengthen plant immunity.",
-};
 
 type Recommendation = {
   label: string;

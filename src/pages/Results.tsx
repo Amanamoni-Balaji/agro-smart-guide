@@ -34,26 +34,39 @@ const Results = () => {
   const location = useLocation();
   const state = location.state as any;
   const isDisease = state?.mode === "disease";
+  const isSimple = state?.mode === "simple";
 
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [loading, setLoading] = useState(!isDisease);
 
   useEffect(() => {
     if (isDisease || !state) return;
     setLoading(true);
-    recommendCropsKNN({
-      nitrogen: state.nitrogen ? parseFloat(state.nitrogen) : undefined,
-      phosphorus: state.phosphorus ? parseFloat(state.phosphorus) : undefined,
-      potassium: state.potassium ? parseFloat(state.potassium) : undefined,
-      temperature: state.temperature ? parseFloat(state.temperature) : undefined,
-      humidity: state.humidity ? parseFloat(state.humidity) : undefined,
-      ph: state.ph ? parseFloat(state.ph) : undefined,
-      rainfall: state.rainfall ? parseFloat(state.rainfall) : undefined,
-    }).then((results) => {
-      setRecommendations(results);
-      setLoading(false);
-    });
-  }, [state, isDisease]);
+
+    if (isSimple) {
+      recommendCropsSimple({
+        state: state.state,
+        district: state.district || undefined,
+        season: state.season || undefined,
+      }).then((results) => {
+        setRecommendations(results);
+        setLoading(false);
+      });
+    } else {
+      recommendCropsKNN({
+        nitrogen: state.nitrogen ? parseFloat(state.nitrogen) : undefined,
+        phosphorus: state.phosphorus ? parseFloat(state.phosphorus) : undefined,
+        potassium: state.potassium ? parseFloat(state.potassium) : undefined,
+        temperature: state.temperature ? parseFloat(state.temperature) : undefined,
+        humidity: state.humidity ? parseFloat(state.humidity) : undefined,
+        ph: state.ph ? parseFloat(state.ph) : undefined,
+        rainfall: state.rainfall ? parseFloat(state.rainfall) : undefined,
+      }).then((results) => {
+        setRecommendations(results);
+        setLoading(false);
+      });
+    }
+  }, [state, isDisease, isSimple]);
 
   const topCrop = recommendations[0];
 

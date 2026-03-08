@@ -1,34 +1,72 @@
-// Crop recommendation dataset based on N, P, K, temperature, humidity, pH, and rainfall
-// Each crop has optimal ranges for all parameters
+// Auto-generated from user-provided Crop_recommendation.csv dataset
+// Each crop's optimal ranges are derived from the real dataset (min-max per parameter)
 
-export interface CropData {
-  name: string;
-  nitrogen: [number, number];      // min-max kg/ha
-  phosphorus: [number, number];    // min-max kg/ha
-  potassium: [number, number];     // min-max kg/ha
-  temperature: [number, number];   // min-max °C
-  humidity: [number, number];      // min-max %
-  ph: [number, number];            // min-max
-  rainfall: [number, number];      // min-max mm
-  season: string[];
-  soilTypes: string[];
-  schedule: { step: string; time: string; desc: string }[];
-  fertilizers: string[];
-  nextCrop: string;
+export interface CropDataEntry {
+  label: string;
+  nitrogen: [number, number];
+  phosphorus: [number, number];
+  potassium: [number, number];
+  temperature: [number, number];
+  humidity: [number, number];
+  ph: [number, number];
+  rainfall: [number, number];
 }
 
-export const cropDataset: CropData[] = [
-  {
-    name: "Rice (Paddy)",
-    nitrogen: [60, 120],
-    phosphorus: [35, 60],
-    potassium: [35, 60],
-    temperature: [20, 35],
-    humidity: [70, 95],
-    ph: [5.0, 7.0],
-    rainfall: [150, 300],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Black Soil", "Alluvial Soil", "Clay Soil", "Loamy Soil"],
+// Ranges extracted from the CSV dataset (100 samples per crop, min-max values)
+export const cropRanges: CropDataEntry[] = [
+  { label: "rice", nitrogen: [60, 99], phosphorus: [35, 60], potassium: [35, 60], temperature: [20, 27], humidity: [80, 85], ph: [5.0, 7.9], rainfall: [183, 299] },
+  { label: "maize", nitrogen: [55, 99], phosphorus: [35, 60], potassium: [15, 25], temperature: [18, 27], humidity: [55, 75], ph: [5.5, 7.0], rainfall: [60, 110] },
+  { label: "chickpea", nitrogen: [20, 50], phosphorus: [55, 80], potassium: [72, 82], temperature: [17, 21], humidity: [14, 20], ph: [7.0, 7.5], rainfall: [65, 95] },
+  { label: "kidneybeans", nitrogen: [0, 30], phosphorus: [55, 70], potassium: [18, 28], temperature: [15, 22], humidity: [18, 25], ph: [5.5, 6.0], rainfall: [60, 150] },
+  { label: "pigeonpeas", nitrogen: [0, 40], phosphorus: [55, 75], potassium: [18, 28], temperature: [18, 36], humidity: [30, 70], ph: [4.5, 7.5], rainfall: [120, 200] },
+  { label: "mothbeans", nitrogen: [0, 25], phosphorus: [40, 55], potassium: [15, 25], temperature: [24, 32], humidity: [40, 65], ph: [3.5, 8.0], rainfall: [30, 55] },
+  { label: "mungbean", nitrogen: [15, 30], phosphorus: [40, 60], potassium: [18, 25], temperature: [27, 30], humidity: [80, 90], ph: [6.0, 7.2], rainfall: [40, 60] },
+  { label: "blackgram", nitrogen: [25, 60], phosphorus: [55, 80], potassium: [12, 25], temperature: [25, 35], humidity: [55, 72], ph: [6.5, 8.0], rainfall: [55, 75] },
+  { label: "lentil", nitrogen: [12, 40], phosphorus: [55, 80], potassium: [12, 20], temperature: [18, 30], humidity: [55, 70], ph: [6.5, 8.0], rainfall: [35, 55] },
+  { label: "pomegranate", nitrogen: [0, 40], phosphorus: [5, 30], potassium: [35, 42], temperature: [18, 32], humidity: [85, 96], ph: [5.5, 7.2], rainfall: [100, 115] },
+  { label: "banana", nitrogen: [75, 120], phosphorus: [70, 100], potassium: [45, 55], temperature: [25, 30], humidity: [75, 85], ph: [5.5, 6.8], rainfall: [90, 115] },
+  { label: "mango", nitrogen: [0, 35], phosphorus: [15, 45], potassium: [25, 35], temperature: [27, 36], humidity: [45, 60], ph: [4.9, 7.5], rainfall: [89, 105] },
+  { label: "grapes", nitrogen: [15, 40], phosphorus: [120, 145], potassium: [195, 210], temperature: [8, 42], humidity: [80, 84], ph: [5.5, 6.8], rainfall: [60, 75] },
+  { label: "watermelon", nitrogen: [80, 130], phosphorus: [15, 30], potassium: [45, 60], temperature: [24, 27], humidity: [80, 90], ph: [6.0, 6.8], rainfall: [40, 60] },
+  { label: "muskmelon", nitrogen: [80, 120], phosphorus: [5, 20], potassium: [45, 55], temperature: [27, 30], humidity: [90, 95], ph: [6.0, 6.8], rainfall: [20, 30] },
+  { label: "apple", nitrogen: [5, 40], phosphorus: [125, 150], potassium: [195, 210], temperature: [21, 24], humidity: [90, 95], ph: [5.5, 6.5], rainfall: [110, 130] },
+  { label: "orange", nitrogen: [10, 40], phosphorus: [5, 30], potassium: [5, 15], temperature: [10, 35], humidity: [90, 95], ph: [6.0, 8.0], rainfall: [100, 115] },
+  { label: "papaya", nitrogen: [35, 65], phosphorus: [45, 70], potassium: [48, 58], temperature: [23, 44], humidity: [90, 95], ph: [6.5, 7.0], rainfall: [140, 250] },
+  { label: "coconut", nitrogen: [0, 40], phosphorus: [5, 30], potassium: [25, 35], temperature: [25, 30], humidity: [90, 99], ph: [5.5, 6.5], rainfall: [130, 230] },
+  { label: "cotton", nitrogen: [100, 150], phosphorus: [35, 60], potassium: [15, 25], temperature: [22, 27], humidity: [75, 85], ph: [6.8, 8.0], rainfall: [60, 115] },
+  { label: "jute", nitrogen: [60, 100], phosphorus: [35, 55], potassium: [35, 45], temperature: [23, 27], humidity: [70, 90], ph: [6.0, 7.5], rainfall: [150, 200] },
+  { label: "coffee", nitrogen: [90, 120], phosphorus: [15, 40], potassium: [25, 35], temperature: [23, 28], humidity: [50, 70], ph: [6.0, 7.0], rainfall: [120, 195] },
+];
+
+// Display-friendly names
+const cropDisplayNames: Record<string, string> = {
+  rice: "Rice (Paddy)",
+  maize: "Maize (Corn)",
+  chickpea: "Chickpea (Bengal Gram)",
+  kidneybeans: "Kidney Beans (Rajma)",
+  pigeonpeas: "Pigeon Peas (Tur/Arhar)",
+  mothbeans: "Moth Beans",
+  mungbean: "Mung Bean (Moong)",
+  blackgram: "Black Gram (Urad)",
+  lentil: "Lentil (Masoor)",
+  pomegranate: "Pomegranate",
+  banana: "Banana",
+  mango: "Mango",
+  grapes: "Grapes",
+  watermelon: "Watermelon",
+  muskmelon: "Muskmelon",
+  apple: "Apple",
+  orange: "Orange",
+  papaya: "Papaya",
+  coconut: "Coconut",
+  cotton: "Cotton",
+  jute: "Jute",
+  coffee: "Coffee",
+};
+
+// Crop schedules, fertilizers, and rotation suggestions
+const cropDetails: Record<string, { schedule: { step: string; time: string; desc: string }[]; fertilizers: string[]; nextCrop: string }> = {
+  rice: {
     schedule: [
       { step: "Land Preparation", time: "Week 1-2", desc: "Plough and level the field, add organic manure." },
       { step: "Sowing / Transplanting", time: "Week 3", desc: "Sow seeds in nursery or transplant seedlings." },
@@ -40,39 +78,7 @@ export const cropDataset: CropData[] = [
     fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)"],
     nextCrop: "Wheat or Mustard (Rabi season)",
   },
-  {
-    name: "Wheat",
-    nitrogen: [80, 120],
-    phosphorus: [40, 60],
-    potassium: [30, 50],
-    temperature: [12, 25],
-    humidity: [50, 75],
-    ph: [6.0, 7.5],
-    rainfall: [50, 100],
-    season: ["Rabi (Winter)"],
-    soilTypes: ["Alluvial Soil", "Loamy Soil", "Clay Soil", "Black Soil"],
-    schedule: [
-      { step: "Land Preparation", time: "Week 1", desc: "Deep ploughing and levelling, apply farmyard manure." },
-      { step: "Sowing", time: "Week 2", desc: "Sow seeds at 3-5 cm depth with 20 cm row spacing." },
-      { step: "First Irrigation", time: "Week 3-4", desc: "Crown root initiation stage — critical irrigation." },
-      { step: "Fertilizer Application", time: "Week 5", desc: "Top dress with Urea at 30 kg/acre." },
-      { step: "Second Irrigation", time: "Week 7-8", desc: "Tillering stage irrigation." },
-      { step: "Harvest", time: "Week 16-18", desc: "Harvest when grains are hard and golden." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)", "Zinc Sulphate"],
-    nextCrop: "Green Gram or Rice (Kharif season)",
-  },
-  {
-    name: "Maize (Corn)",
-    nitrogen: [60, 100],
-    phosphorus: [35, 55],
-    potassium: [30, 50],
-    temperature: [18, 32],
-    humidity: [50, 80],
-    ph: [5.5, 7.5],
-    rainfall: [60, 110],
-    season: ["Kharif (Monsoon)", "Rabi (Winter)"],
-    soilTypes: ["Loamy Soil", "Alluvial Soil", "Red Soil", "Black Soil"],
+  maize: {
     schedule: [
       { step: "Land Preparation", time: "Week 1", desc: "Plough field and incorporate compost." },
       { step: "Sowing", time: "Week 2", desc: "Sow seeds at 5 cm depth with 60 cm row spacing." },
@@ -84,105 +90,7 @@ export const cropDataset: CropData[] = [
     fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)"],
     nextCrop: "Chickpea or Wheat (Rabi season)",
   },
-  {
-    name: "Cotton",
-    nitrogen: [80, 120],
-    phosphorus: [40, 60],
-    potassium: [40, 60],
-    temperature: [25, 35],
-    humidity: [50, 75],
-    ph: [6.0, 8.0],
-    rainfall: [60, 110],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Black Soil", "Alluvial Soil", "Loamy Soil"],
-    schedule: [
-      { step: "Land Preparation", time: "Week 1-2", desc: "Deep ploughing and harrowing." },
-      { step: "Sowing", time: "Week 3", desc: "Sow seeds at 3-5 cm depth, 90 cm row spacing." },
-      { step: "Thinning & Weeding", time: "Week 5-6", desc: "Remove extra seedlings and weeds." },
-      { step: "Fertilizer Application", time: "Week 6-8", desc: "Apply NPK fertilizer in split doses." },
-      { step: "Pest Management", time: "Week 8-12", desc: "Scout for bollworms; apply IPM as needed." },
-      { step: "Harvest", time: "Week 20-24", desc: "Pick bolls when they open fully." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)", "Neem Cake"],
-    nextCrop: "Wheat or Chickpea (Rabi season)",
-  },
-  {
-    name: "Sugarcane",
-    nitrogen: [100, 150],
-    phosphorus: [50, 80],
-    potassium: [50, 80],
-    temperature: [25, 38],
-    humidity: [60, 90],
-    ph: [5.5, 8.0],
-    rainfall: [100, 200],
-    season: ["Kharif (Monsoon)", "Zaid (Summer)"],
-    soilTypes: ["Loamy Soil", "Alluvial Soil", "Black Soil", "Clay Soil"],
-    schedule: [
-      { step: "Land Preparation", time: "Week 1-2", desc: "Deep ploughing, level field, make furrows." },
-      { step: "Planting", time: "Week 3", desc: "Plant setts in furrows at 90 cm spacing." },
-      { step: "Gap Filling", time: "Week 5-6", desc: "Replace dead setts to maintain uniform stand." },
-      { step: "Earthing Up", time: "Week 10-12", desc: "Mound soil around base of plants." },
-      { step: "Irrigation", time: "Throughout", desc: "Regular irrigation every 10-15 days." },
-      { step: "Harvest", time: "Month 10-12", desc: "Harvest when juice Brix reaches 18-20%." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Farmyard Manure"],
-    nextCrop: "Ratoon crop or Wheat (Rabi season)",
-  },
-  {
-    name: "Groundnut (Peanut)",
-    nitrogen: [10, 40],
-    phosphorus: [40, 60],
-    potassium: [30, 50],
-    temperature: [25, 35],
-    humidity: [50, 80],
-    ph: [5.5, 7.0],
-    rainfall: [50, 100],
-    season: ["Kharif (Monsoon)", "Rabi (Winter)"],
-    soilTypes: ["Sandy Soil", "Red Soil", "Loamy Soil", "Laterite Soil"],
-    schedule: [
-      { step: "Land Preparation", time: "Week 1", desc: "Plough and harrow to get fine tilth." },
-      { step: "Sowing", time: "Week 2", desc: "Sow kernels at 5 cm depth, 30 cm spacing." },
-      { step: "Gypsum Application", time: "Week 5", desc: "Apply gypsum at flowering for pod development." },
-      { step: "Weeding", time: "Week 4-6", desc: "Two weedings at 20 and 40 days after sowing." },
-      { step: "Earthing Up", time: "Week 6", desc: "Mound soil to encourage pegging." },
-      { step: "Harvest", time: "Week 14-17", desc: "Harvest when leaves turn yellow and pods mature." },
-    ],
-    fertilizers: ["DAP (18-46-0)", "Gypsum", "SSP (0-16-0)"],
-    nextCrop: "Wheat or Sorghum (Rabi season)",
-  },
-  {
-    name: "Soybean",
-    nitrogen: [0, 30],
-    phosphorus: [50, 80],
-    potassium: [30, 50],
-    temperature: [20, 32],
-    humidity: [60, 85],
-    ph: [5.5, 7.0],
-    rainfall: [60, 120],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Black Soil", "Loamy Soil", "Alluvial Soil"],
-    schedule: [
-      { step: "Seed Treatment", time: "Before sowing", desc: "Treat seeds with Rhizobium culture." },
-      { step: "Sowing", time: "Week 1-2", desc: "Sow at 3-4 cm depth with 45 cm row spacing." },
-      { step: "Weeding", time: "Week 3-4", desc: "First weeding at 20 days, second at 35 days." },
-      { step: "Pest Monitoring", time: "Week 5-8", desc: "Monitor for stem fly, girdle beetle." },
-      { step: "Pod Development", time: "Week 8-12", desc: "Ensure adequate moisture during pod filling." },
-      { step: "Harvest", time: "Week 13-15", desc: "Harvest when 95% pods turn brown." },
-    ],
-    fertilizers: ["DAP (18-46-0)", "SSP (0-16-0)", "Rhizobium Inoculant"],
-    nextCrop: "Wheat or Chickpea (Rabi season)",
-  },
-  {
-    name: "Chickpea (Bengal Gram)",
-    nitrogen: [15, 40],
-    phosphorus: [50, 80],
-    potassium: [20, 40],
-    temperature: [15, 30],
-    humidity: [40, 65],
-    ph: [6.0, 8.0],
-    rainfall: [40, 80],
-    season: ["Rabi (Winter)"],
-    soilTypes: ["Black Soil", "Loamy Soil", "Red Soil", "Alluvial Soil"],
+  chickpea: {
     schedule: [
       { step: "Seed Treatment", time: "Before sowing", desc: "Treat with Rhizobium & Trichoderma." },
       { step: "Sowing", time: "Week 1", desc: "Sow at 8-10 cm depth with 30 cm spacing." },
@@ -194,215 +102,19 @@ export const cropDataset: CropData[] = [
     fertilizers: ["DAP (18-46-0)", "Rhizobium Culture", "Zinc Sulphate"],
     nextCrop: "Rice or Maize (Kharif season)",
   },
-  {
-    name: "Mustard",
-    nitrogen: [60, 90],
-    phosphorus: [30, 50],
-    potassium: [20, 40],
-    temperature: [10, 25],
-    humidity: [40, 70],
-    ph: [6.0, 7.5],
-    rainfall: [30, 60],
-    season: ["Rabi (Winter)"],
-    soilTypes: ["Loamy Soil", "Sandy Soil", "Alluvial Soil"],
+  kidneybeans: {
     schedule: [
-      { step: "Land Preparation", time: "Week 1", desc: "Fine tilth preparation with 2-3 ploughings." },
-      { step: "Sowing", time: "Week 2", desc: "Sow at 1.5-2 cm depth, 30 cm row spacing." },
-      { step: "Thinning", time: "Week 3", desc: "Thin seedlings to 10-15 cm apart." },
-      { step: "Irrigation", time: "Week 5-6", desc: "First irrigation at flowering stage." },
-      { step: "Aphid Control", time: "Week 7-8", desc: "Spray for mustard aphid if seen." },
-      { step: "Harvest", time: "Week 14-16", desc: "Harvest when pods turn yellow-brown." },
+      { step: "Seed Treatment", time: "Before sowing", desc: "Treat with Rhizobium inoculant." },
+      { step: "Sowing", time: "Week 1", desc: "Sow at 5 cm depth, 45×10 cm spacing." },
+      { step: "Weeding", time: "Week 3-4", desc: "Hand weeding at 20-25 DAS." },
+      { step: "Staking", time: "Week 4-5", desc: "Provide support for climbing varieties." },
+      { step: "Irrigation", time: "Week 5-8", desc: "Irrigate at flowering and pod formation." },
+      { step: "Harvest", time: "Week 12-14", desc: "Harvest when pods are fully mature and dry." },
     ],
-    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "Sulphur"],
-    nextCrop: "Green Gram or Rice (Kharif season)",
+    fertilizers: ["DAP (18-46-0)", "SSP (0-16-0)", "Rhizobium Culture"],
+    nextCrop: "Wheat or Barley (Rabi season)",
   },
-  {
-    name: "Sunflower",
-    nitrogen: [60, 90],
-    phosphorus: [40, 60],
-    potassium: [30, 50],
-    temperature: [20, 30],
-    humidity: [50, 75],
-    ph: [6.0, 7.5],
-    rainfall: [50, 90],
-    season: ["Kharif (Monsoon)", "Rabi (Winter)", "Zaid (Summer)"],
-    soilTypes: ["Black Soil", "Loamy Soil", "Alluvial Soil", "Red Soil"],
-    schedule: [
-      { step: "Land Preparation", time: "Week 1", desc: "Deep ploughing and levelling." },
-      { step: "Sowing", time: "Week 2", desc: "Sow at 4-5 cm depth, 60 cm row spacing." },
-      { step: "Thinning", time: "Week 3", desc: "Thin to one plant per hill." },
-      { step: "Fertilizer", time: "Week 4-5", desc: "Top dress with nitrogen." },
-      { step: "Irrigation", time: "Week 6-8", desc: "Critical irrigation at flowering and seed filling." },
-      { step: "Harvest", time: "Week 12-14", desc: "Harvest when back of head turns yellow." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "Borax"],
-    nextCrop: "Wheat or Chickpea (Rabi season)",
-  },
-  {
-    name: "Tomato",
-    nitrogen: [80, 120],
-    phosphorus: [60, 80],
-    potassium: [60, 80],
-    temperature: [20, 30],
-    humidity: [50, 80],
-    ph: [6.0, 7.0],
-    rainfall: [40, 80],
-    season: ["Kharif (Monsoon)", "Rabi (Winter)"],
-    soilTypes: ["Loamy Soil", "Red Soil", "Sandy Soil", "Alluvial Soil"],
-    schedule: [
-      { step: "Nursery", time: "Week 1-3", desc: "Raise seedlings in nursery beds." },
-      { step: "Transplanting", time: "Week 4", desc: "Transplant 4-week old seedlings at 60×45 cm." },
-      { step: "Staking", time: "Week 5-6", desc: "Stake plants for support." },
-      { step: "Fertilizer", time: "Week 6-8", desc: "Apply NPK in split doses." },
-      { step: "Pest Management", time: "Week 8-10", desc: "Monitor for fruit borer and blight." },
-      { step: "Harvest", time: "Week 10-16", desc: "Harvest when fruits turn red/pink." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)", "Calcium Nitrate"],
-    nextCrop: "Cabbage or Onion",
-  },
-  {
-    name: "Potato",
-    nitrogen: [80, 120],
-    phosphorus: [50, 70],
-    potassium: [80, 120],
-    temperature: [15, 25],
-    humidity: [60, 85],
-    ph: [5.0, 6.5],
-    rainfall: [40, 80],
-    season: ["Rabi (Winter)"],
-    soilTypes: ["Loamy Soil", "Sandy Soil", "Alluvial Soil"],
-    schedule: [
-      { step: "Land Preparation", time: "Week 1", desc: "Deep ploughing, ridge and furrow formation." },
-      { step: "Planting", time: "Week 2", desc: "Plant seed tubers in ridges at 60×20 cm." },
-      { step: "Earthing Up", time: "Week 4-5", desc: "Mound soil around emerging plants." },
-      { step: "Fertilizer", time: "Week 3-6", desc: "Apply Urea and MOP in split doses." },
-      { step: "Irrigation", time: "Week 6-10", desc: "Regular irrigation every 7-10 days." },
-      { step: "Harvest", time: "Week 12-14", desc: "Harvest 10 days after haulm cutting." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Farmyard Manure"],
-    nextCrop: "Green Gram or Maize (Summer/Kharif)",
-  },
-  {
-    name: "Onion",
-    nitrogen: [80, 110],
-    phosphorus: [50, 70],
-    potassium: [60, 80],
-    temperature: [15, 30],
-    humidity: [60, 80],
-    ph: [6.0, 7.5],
-    rainfall: [40, 75],
-    season: ["Rabi (Winter)", "Kharif (Monsoon)"],
-    soilTypes: ["Loamy Soil", "Red Soil", "Alluvial Soil", "Sandy Soil"],
-    schedule: [
-      { step: "Nursery", time: "Week 1-6", desc: "Raise seedlings in nursery beds." },
-      { step: "Transplanting", time: "Week 7", desc: "Transplant seedlings at 15×10 cm spacing." },
-      { step: "Weeding", time: "Week 9-10", desc: "Two weedings at 20 and 40 days." },
-      { step: "Fertilizer", time: "Week 8-12", desc: "Apply nitrogen in 2-3 split doses." },
-      { step: "Irrigation", time: "Week 7-18", desc: "Light, frequent irrigation." },
-      { step: "Harvest", time: "Week 18-20", desc: "Harvest when tops fall over and dry." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Sulphur"],
-    nextCrop: "Tomato or Maize",
-  },
-  {
-    name: "Turmeric",
-    nitrogen: [60, 90],
-    phosphorus: [30, 50],
-    potassium: [80, 120],
-    temperature: [25, 35],
-    humidity: [70, 90],
-    ph: [5.0, 7.0],
-    rainfall: [150, 250],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Loamy Soil", "Alluvial Soil", "Red Soil", "Clay Soil"],
-    schedule: [
-      { step: "Land Preparation", time: "Week 1-2", desc: "Fine tilth, form ridges and furrows." },
-      { step: "Planting", time: "Week 3", desc: "Plant mother/finger rhizomes in ridges." },
-      { step: "Mulching", time: "Week 3-4", desc: "Apply green leaf mulch." },
-      { step: "Fertilizer", time: "Week 8-12", desc: "Apply NPK in 3 split doses." },
-      { step: "Earthing Up", time: "Week 8, 12", desc: "Earth up at 60 and 90 days." },
-      { step: "Harvest", time: "Month 8-9", desc: "Harvest when leaves dry and turn yellow." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Farmyard Manure"],
-    nextCrop: "Vegetables or Pulses",
-  },
-  {
-    name: "Chilli (Pepper)",
-    nitrogen: [80, 120],
-    phosphorus: [40, 60],
-    potassium: [50, 70],
-    temperature: [20, 35],
-    humidity: [60, 80],
-    ph: [6.0, 7.0],
-    rainfall: [50, 100],
-    season: ["Kharif (Monsoon)", "Rabi (Winter)"],
-    soilTypes: ["Loamy Soil", "Black Soil", "Red Soil", "Sandy Soil"],
-    schedule: [
-      { step: "Nursery", time: "Week 1-4", desc: "Raise seedlings in protected nursery." },
-      { step: "Transplanting", time: "Week 5", desc: "Transplant at 60×45 cm spacing." },
-      { step: "Staking", time: "Week 7-8", desc: "Stake plants if needed." },
-      { step: "Fertilizer", time: "Week 6-10", desc: "Apply NPK in split doses." },
-      { step: "Pest Control", time: "Week 8-14", desc: "Monitor thrips, mites, and fruit borer." },
-      { step: "Harvest", time: "Week 12-20", desc: "Pick fruits at green or red stage." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)", "Neem Cake"],
-    nextCrop: "Onion or Wheat",
-  },
-  {
-    name: "Sorghum (Jowar)",
-    nitrogen: [40, 80],
-    phosphorus: [25, 45],
-    potassium: [20, 40],
-    temperature: [25, 35],
-    humidity: [40, 70],
-    ph: [6.0, 8.0],
-    rainfall: [40, 80],
-    season: ["Kharif (Monsoon)", "Rabi (Winter)"],
-    soilTypes: ["Black Soil", "Red Soil", "Loamy Soil", "Sandy Soil"],
-    schedule: [
-      { step: "Land Preparation", time: "Week 1", desc: "Plough and level the field." },
-      { step: "Sowing", time: "Week 2", desc: "Sow at 3-5 cm depth, 45 cm row spacing." },
-      { step: "Thinning", time: "Week 3", desc: "Thin to 15 cm plant spacing." },
-      { step: "Fertilizer", time: "Week 4-5", desc: "Top dress with nitrogen at knee-high stage." },
-      { step: "Weeding", time: "Week 4-6", desc: "Hand weeding or inter-cultivation." },
-      { step: "Harvest", time: "Week 14-16", desc: "Harvest when grains are hard and dry." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "SSP (0-16-0)"],
-    nextCrop: "Chickpea or Safflower (Rabi season)",
-  },
-  {
-    name: "Pearl Millet (Bajra)",
-    nitrogen: [40, 80],
-    phosphorus: [20, 40],
-    potassium: [15, 35],
-    temperature: [25, 38],
-    humidity: [30, 65],
-    ph: [6.5, 8.5],
-    rainfall: [25, 60],
-    season: ["Kharif (Monsoon)", "Zaid (Summer)"],
-    soilTypes: ["Sandy Soil", "Loamy Soil", "Red Soil", "Laterite Soil"],
-    schedule: [
-      { step: "Land Preparation", time: "Week 1", desc: "Light ploughing and levelling." },
-      { step: "Sowing", time: "Week 2", desc: "Sow at 2-3 cm depth, 45 cm row spacing." },
-      { step: "Thinning", time: "Week 3", desc: "Thin plants to 10-15 cm apart." },
-      { step: "Fertilizer", time: "Week 4", desc: "Top dress with nitrogen." },
-      { step: "Weeding", time: "Week 3-5", desc: "One or two weedings." },
-      { step: "Harvest", time: "Week 10-12", desc: "Harvest when earheads turn brown." },
-    ],
-    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)"],
-    nextCrop: "Mustard or Chickpea (Rabi season)",
-  },
-  {
-    name: "Pigeon Pea (Tur/Arhar)",
-    nitrogen: [10, 30],
-    phosphorus: [40, 70],
-    potassium: [15, 35],
-    temperature: [20, 35],
-    humidity: [50, 80],
-    ph: [5.5, 7.5],
-    rainfall: [60, 120],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Red Soil", "Black Soil", "Loamy Soil", "Laterite Soil"],
+  pigeonpeas: {
     schedule: [
       { step: "Seed Treatment", time: "Before sowing", desc: "Treat with Rhizobium culture." },
       { step: "Sowing", time: "Week 1-2", desc: "Sow at 4-5 cm depth, 60-75 cm spacing." },
@@ -414,17 +126,19 @@ export const cropDataset: CropData[] = [
     fertilizers: ["DAP (18-46-0)", "Rhizobium Culture", "SSP (0-16-0)"],
     nextCrop: "Wheat or Sorghum (Rabi season)",
   },
-  {
-    name: "Green Gram (Moong)",
-    nitrogen: [10, 30],
-    phosphorus: [30, 55],
-    potassium: [15, 30],
-    temperature: [25, 35],
-    humidity: [50, 80],
-    ph: [6.0, 7.5],
-    rainfall: [40, 80],
-    season: ["Kharif (Monsoon)", "Zaid (Summer)"],
-    soilTypes: ["Loamy Soil", "Sandy Soil", "Red Soil", "Alluvial Soil"],
+  mothbeans: {
+    schedule: [
+      { step: "Land Preparation", time: "Week 1", desc: "Light ploughing in sandy/arid soil." },
+      { step: "Sowing", time: "Week 2", desc: "Broadcast or line sow at 2-3 cm depth." },
+      { step: "Thinning", time: "Week 3", desc: "Thin plants to 10 cm apart." },
+      { step: "Weeding", time: "Week 4", desc: "One weeding at 20-25 DAS." },
+      { step: "Irrigation", time: "Rainfed", desc: "Mostly rainfed; tolerates drought well." },
+      { step: "Harvest", time: "Week 10-12", desc: "Harvest when pods turn brown." },
+    ],
+    fertilizers: ["DAP (18-46-0)", "SSP (0-16-0)"],
+    nextCrop: "Mustard or Wheat (Rabi season)",
+  },
+  mungbean: {
     schedule: [
       { step: "Seed Treatment", time: "Before sowing", desc: "Treat with Rhizobium inoculant." },
       { step: "Sowing", time: "Week 1", desc: "Sow at 3-4 cm depth, 30 cm row spacing." },
@@ -436,17 +150,7 @@ export const cropDataset: CropData[] = [
     fertilizers: ["DAP (18-46-0)", "Rhizobium Culture"],
     nextCrop: "Wheat or Rice (Rabi/Kharif)",
   },
-  {
-    name: "Black Gram (Urad)",
-    nitrogen: [10, 30],
-    phosphorus: [35, 60],
-    potassium: [15, 30],
-    temperature: [25, 35],
-    humidity: [60, 85],
-    ph: [6.0, 7.5],
-    rainfall: [50, 100],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Loamy Soil", "Black Soil", "Red Soil", "Alluvial Soil"],
+  blackgram: {
     schedule: [
       { step: "Seed Treatment", time: "Before sowing", desc: "Treat with Rhizobium inoculant." },
       { step: "Sowing", time: "Week 1", desc: "Sow at 3-4 cm depth, 30 cm row spacing." },
@@ -458,61 +162,31 @@ export const cropDataset: CropData[] = [
     fertilizers: ["DAP (18-46-0)", "Rhizobium Culture", "PSB Culture"],
     nextCrop: "Wheat or Mustard (Rabi season)",
   },
-  {
-    name: "Sesame (Til)",
-    nitrogen: [30, 50],
-    phosphorus: [20, 40],
-    potassium: [15, 30],
-    temperature: [25, 35],
-    humidity: [40, 65],
-    ph: [5.5, 7.5],
-    rainfall: [30, 65],
-    season: ["Kharif (Monsoon)", "Zaid (Summer)"],
-    soilTypes: ["Sandy Soil", "Loamy Soil", "Red Soil"],
+  lentil: {
     schedule: [
-      { step: "Land Preparation", time: "Week 1", desc: "Light ploughing and levelling." },
-      { step: "Sowing", time: "Week 2", desc: "Broadcast or line sow at 1-2 cm depth." },
-      { step: "Thinning", time: "Week 3", desc: "Thin to 10 cm plant spacing." },
-      { step: "Weeding", time: "Week 4-5", desc: "Hand weeding at 20-25 DAS." },
-      { step: "Irrigation", time: "If dry", desc: "One irrigation at flowering." },
-      { step: "Harvest", time: "Week 12-14", desc: "Harvest when lower capsules turn brown." },
+      { step: "Seed Treatment", time: "Before sowing", desc: "Treat with Rhizobium and fungicide." },
+      { step: "Sowing", time: "Week 1", desc: "Sow at 3-4 cm depth, 25 cm row spacing." },
+      { step: "Weeding", time: "Week 3-4", desc: "One manual weeding." },
+      { step: "Irrigation", time: "Week 6-7", desc: "One irrigation at flowering if needed." },
+      { step: "Pest Management", time: "Week 8-10", desc: "Monitor for aphids and wilt." },
+      { step: "Harvest", time: "Week 14-16", desc: "Harvest when pods turn brown and dry." },
     ],
-    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)"],
-    nextCrop: "Chickpea or Wheat (Rabi season)",
+    fertilizers: ["DAP (18-46-0)", "Rhizobium Culture", "Zinc Sulphate"],
+    nextCrop: "Rice or Maize (Kharif season)",
   },
-  {
-    name: "Jute",
-    nitrogen: [40, 70],
-    phosphorus: [20, 40],
-    potassium: [20, 40],
-    temperature: [25, 35],
-    humidity: [70, 95],
-    ph: [5.5, 7.0],
-    rainfall: [150, 250],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Alluvial Soil", "Loamy Soil", "Clay Soil"],
+  pomegranate: {
     schedule: [
-      { step: "Land Preparation", time: "Week 1", desc: "Plough and level with standing water." },
-      { step: "Sowing", time: "Week 2", desc: "Broadcast seeds after pre-monsoon showers." },
-      { step: "Thinning", time: "Week 4", desc: "Thin to maintain 7-10 cm spacing." },
-      { step: "Weeding", time: "Week 5-6", desc: "Two weedings at 15 and 30 DAS." },
-      { step: "Top Dressing", time: "Week 6", desc: "Apply urea as top dressing." },
-      { step: "Harvest & Retting", time: "Week 14-16", desc: "Harvest at flowering, ret in water for 15-20 days." },
+      { step: "Pit Preparation", time: "Month 1", desc: "Dig pits 60×60×60 cm, fill with compost." },
+      { step: "Planting", time: "Month 2", desc: "Plant cuttings/grafts at 4×4 m spacing." },
+      { step: "Training & Pruning", time: "Year 1-2", desc: "Shape plants with 3-4 main branches." },
+      { step: "Fertilizer", time: "3 times/year", desc: "Apply NPK in splits." },
+      { step: "Irrigation", time: "Regular", desc: "Drip irrigation recommended." },
+      { step: "First Harvest", time: "Year 2-3", desc: "Harvest when fruits turn red and heavy." },
     ],
-    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)"],
-    nextCrop: "Rice or Potato (Rabi season)",
+    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Farmyard Manure"],
+    nextCrop: "Perennial (intercrop with vegetables)",
   },
-  {
-    name: "Banana",
-    nitrogen: [100, 150],
-    phosphorus: [30, 60],
-    potassium: [100, 200],
-    temperature: [25, 35],
-    humidity: [70, 90],
-    ph: [5.5, 7.0],
-    rainfall: [100, 200],
-    season: ["Kharif (Monsoon)", "Zaid (Summer)"],
-    soilTypes: ["Loamy Soil", "Alluvial Soil", "Red Soil", "Clay Soil"],
+  banana: {
     schedule: [
       { step: "Pit Preparation", time: "Week 1-2", desc: "Dig pits 45×45×45 cm, fill with compost." },
       { step: "Planting", time: "Week 3", desc: "Plant tissue culture or sucker at 1.8×1.8 m." },
@@ -522,19 +196,93 @@ export const cropDataset: CropData[] = [
       { step: "Harvest", time: "Month 11-14", desc: "Harvest when fingers fill and round." },
     ],
     fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)", "Farmyard Manure"],
-    nextCrop: "Ratoon or Vegetables",
+    nextCrop: "Ratoon crop or Vegetables",
   },
-  {
-    name: "Coconut",
-    nitrogen: [50, 80],
-    phosphorus: [20, 40],
-    potassium: [80, 150],
-    temperature: [25, 35],
-    humidity: [70, 95],
-    ph: [5.5, 7.5],
-    rainfall: [130, 250],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Laterite Soil", "Sandy Soil", "Loamy Soil", "Red Soil"],
+  mango: {
+    schedule: [
+      { step: "Pit Preparation", time: "Month 1", desc: "Dig pits 1×1×1 m, fill with topsoil and compost." },
+      { step: "Planting", time: "Month 2", desc: "Plant grafted saplings at 8×8 m spacing." },
+      { step: "Training", time: "Year 1-3", desc: "Shape canopy by removing unwanted branches." },
+      { step: "Fertilizer", time: "Twice/year", desc: "Apply NPK before and after monsoon." },
+      { step: "Irrigation", time: "Dry months", desc: "Irrigate during dry spells." },
+      { step: "First Harvest", time: "Year 4-6", desc: "Harvest when fruits mature and colour develops." },
+    ],
+    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Farmyard Manure"],
+    nextCrop: "Perennial plantation (intercrop with pulses)",
+  },
+  grapes: {
+    schedule: [
+      { step: "Pit & Pandal Setup", time: "Month 1-2", desc: "Prepare pits and trellis/pandal system." },
+      { step: "Planting", time: "Month 3", desc: "Plant cuttings at 3×1.5 m spacing." },
+      { step: "Training", time: "Year 1", desc: "Train vines on pandal structure." },
+      { step: "Pruning", time: "Twice/year", desc: "April (back) and October (forward) pruning." },
+      { step: "Fertilizer", time: "Split doses", desc: "Heavy NPK + micronutrients." },
+      { step: "First Harvest", time: "Year 2-3", desc: "Harvest when berries reach desired Brix." },
+    ],
+    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "SOP (0-0-50)", "Micronutrient mix"],
+    nextCrop: "Perennial vineyard (continues 15-20 years)",
+  },
+  watermelon: {
+    schedule: [
+      { step: "Land Preparation", time: "Week 1", desc: "Prepare raised beds or channels." },
+      { step: "Sowing", time: "Week 2", desc: "Sow seeds at 2-3 cm depth, 2×1.5 m spacing." },
+      { step: "Thinning", time: "Week 3", desc: "Retain 1-2 plants per hill." },
+      { step: "Fertilizer", time: "Week 4-5", desc: "Top dress with nitrogen and potash." },
+      { step: "Vine Training", time: "Week 5-6", desc: "Direct vines in one direction." },
+      { step: "Harvest", time: "Week 12-14", desc: "Harvest when tendril near fruit dries." },
+    ],
+    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)"],
+    nextCrop: "Onion or Vegetables (Rabi)",
+  },
+  muskmelon: {
+    schedule: [
+      { step: "Land Preparation", time: "Week 1", desc: "Prepare raised beds with FYM." },
+      { step: "Sowing", time: "Week 2", desc: "Sow seeds at 2 cm depth, 1.5×1 m spacing." },
+      { step: "Thinning", time: "Week 3", desc: "Keep 2 plants per pit." },
+      { step: "Fertilizer", time: "Week 4", desc: "Apply NPK at vine running stage." },
+      { step: "Irrigation", time: "Week 3-8", desc: "Regular light irrigation; avoid waterlogging." },
+      { step: "Harvest", time: "Week 10-12", desc: "Harvest when fruit develops aroma and nets." },
+    ],
+    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)"],
+    nextCrop: "Vegetables or Pulses",
+  },
+  apple: {
+    schedule: [
+      { step: "Pit Preparation", time: "Month 1", desc: "Dig pits 1×1×1 m with organic matter." },
+      { step: "Planting", time: "Month 2", desc: "Plant grafted saplings at 5×5 m spacing." },
+      { step: "Training & Pruning", time: "Year 1-3", desc: "Shape tree with modified central leader." },
+      { step: "Fertilizer", time: "Twice/year", desc: "Apply NPK in spring and after harvest." },
+      { step: "Pest Management", time: "Year-round", desc: "Spray schedule for scab, codling moth." },
+      { step: "First Harvest", time: "Year 4-6", desc: "Harvest when fruit colour and size develop." },
+    ],
+    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Borax"],
+    nextCrop: "Perennial orchard (continues 30+ years)",
+  },
+  orange: {
+    schedule: [
+      { step: "Pit Preparation", time: "Month 1", desc: "Dig pits 75×75×75 cm, fill with compost." },
+      { step: "Planting", time: "Month 2", desc: "Plant grafted saplings at 6×6 m spacing." },
+      { step: "Basin Management", time: "Year 1-3", desc: "Keep basin clean and weed-free." },
+      { step: "Fertilizer", time: "3 times/year", desc: "Apply NPK in split doses." },
+      { step: "Irrigation", time: "Regular", desc: "Drip or basin irrigation." },
+      { step: "First Harvest", time: "Year 3-5", desc: "Harvest when fruits turn orange." },
+    ],
+    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Zinc Sulphate"],
+    nextCrop: "Perennial orchard (intercrop with vegetables)",
+  },
+  papaya: {
+    schedule: [
+      { step: "Pit Preparation", time: "Week 1", desc: "Dig pits 50×50×50 cm, mix compost." },
+      { step: "Planting", time: "Week 2", desc: "Plant seedlings at 2×2 m spacing." },
+      { step: "Fertilizer", time: "Monthly", desc: "Apply NPK in regular split doses." },
+      { step: "Irrigation", time: "Regular", desc: "Irrigate every 4-5 days; avoid waterlogging." },
+      { step: "Pest Management", time: "Month 3-6", desc: "Monitor for papaya ring spot virus." },
+      { step: "Harvest", time: "Month 9-12", desc: "Harvest when skin shows yellow patches." },
+    ],
+    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)", "Farmyard Manure"],
+    nextCrop: "Replant or rotate with vegetables",
+  },
+  coconut: {
     schedule: [
       { step: "Pit Preparation", time: "Month 1", desc: "Dig pits 1×1×1 m, fill with topsoil and compost." },
       { step: "Planting", time: "Month 2", desc: "Plant seedlings at 7.5×7.5 m spacing." },
@@ -546,39 +294,31 @@ export const cropDataset: CropData[] = [
     fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Farmyard Manure"],
     nextCrop: "Intercrop with cocoa, pepper, or banana",
   },
-  {
-    name: "Tea",
-    nitrogen: [80, 130],
-    phosphorus: [20, 40],
-    potassium: [40, 70],
-    temperature: [15, 28],
-    humidity: [70, 95],
-    ph: [4.5, 5.5],
-    rainfall: [150, 300],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Laterite Soil", "Loamy Soil", "Red Soil"],
+  cotton: {
     schedule: [
-      { step: "Land Preparation", time: "Month 1-2", desc: "Clear land, plant shade trees." },
-      { step: "Planting", time: "Month 3", desc: "Plant seedlings at 1.2×0.6 m spacing." },
-      { step: "Pruning", time: "Year 2", desc: "Initial frame formation pruning." },
-      { step: "Fertilizer", time: "3-4 times/year", desc: "Apply NPK in split doses." },
-      { step: "Plucking Begins", time: "Year 3", desc: "Start regular plucking of two leaves and a bud." },
-      { step: "Maintenance", time: "Ongoing", desc: "Regular pruning, pest management." },
+      { step: "Land Preparation", time: "Week 1-2", desc: "Deep ploughing and harrowing." },
+      { step: "Sowing", time: "Week 3", desc: "Sow seeds at 3-5 cm depth, 90 cm row spacing." },
+      { step: "Thinning & Weeding", time: "Week 5-6", desc: "Remove extra seedlings and weeds." },
+      { step: "Fertilizer Application", time: "Week 6-8", desc: "Apply NPK fertilizer in split doses." },
+      { step: "Pest Management", time: "Week 8-12", desc: "Scout for bollworms; apply IPM as needed." },
+      { step: "Harvest", time: "Week 20-24", desc: "Pick bolls when they open fully." },
     ],
-    fertilizers: ["Urea (46-0-0)", "Rock Phosphate", "MOP (0-0-60)", "Dolomite"],
-    nextCrop: "Perennial plantation (continues for 50+ years)",
+    fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)", "Neem Cake"],
+    nextCrop: "Wheat or Chickpea (Rabi season)",
   },
-  {
-    name: "Coffee",
-    nitrogen: [70, 120],
-    phosphorus: [20, 40],
-    potassium: [60, 100],
-    temperature: [18, 28],
-    humidity: [70, 90],
-    ph: [5.0, 6.5],
-    rainfall: [150, 250],
-    season: ["Kharif (Monsoon)"],
-    soilTypes: ["Laterite Soil", "Red Soil", "Loamy Soil"],
+  jute: {
+    schedule: [
+      { step: "Land Preparation", time: "Week 1", desc: "Plough and level with standing water." },
+      { step: "Sowing", time: "Week 2", desc: "Broadcast seeds after pre-monsoon showers." },
+      { step: "Thinning", time: "Week 4", desc: "Thin to maintain 7-10 cm spacing." },
+      { step: "Weeding", time: "Week 5-6", desc: "Two weedings at 15 and 30 DAS." },
+      { step: "Top Dressing", time: "Week 6", desc: "Apply urea as top dressing." },
+      { step: "Harvest & Retting", time: "Week 14-16", desc: "Harvest at flowering, ret in water for 15-20 days." },
+    ],
+    fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)"],
+    nextCrop: "Rice or Potato (Rabi season)",
+  },
+  coffee: {
     schedule: [
       { step: "Nursery", time: "Month 1-6", desc: "Raise seedlings in shade nursery." },
       { step: "Planting", time: "Month 7", desc: "Plant during monsoon onset at 2×2 m." },
@@ -590,14 +330,29 @@ export const cropDataset: CropData[] = [
     fertilizers: ["Urea (46-0-0)", "SSP (0-16-0)", "MOP (0-0-60)", "Lime"],
     nextCrop: "Perennial plantation (intercrop with pepper)",
   },
-];
+};
+
+export function getDisplayName(label: string): string {
+  return cropDisplayNames[label] || label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+export function getCropDetails(label: string) {
+  return cropDetails[label] || {
+    schedule: [
+      { step: "Sowing", time: "Week 1-2", desc: "Prepare land and sow seeds." },
+      { step: "Management", time: "Week 3-12", desc: "Regular irrigation, weeding, and fertilizer." },
+      { step: "Harvest", time: "Week 14-16", desc: "Harvest at maturity." },
+    ],
+    fertilizers: ["NPK Complex"],
+    nextCrop: "Rotate with a different crop family",
+  };
+}
 
 /**
- * Recommend crops based on input parameters using distance-based scoring.
- * Each parameter's deviation from the crop's optimal range is scored.
- * Lower score = better match.
+ * Recommend crops based on input N, P, K, temperature, humidity, pH, rainfall.
+ * Uses distance-from-optimal-range scoring derived from real CSV dataset.
  */
-export function recommendCrops(input: {
+export function recommendCropsFromDataset(input: {
   nitrogen?: number;
   phosphorus?: number;
   potassium?: number;
@@ -605,10 +360,8 @@ export function recommendCrops(input: {
   humidity?: number;
   ph?: number;
   rainfall?: number;
-  soil?: string;
-  season?: string;
-}): { crop: CropData; score: number; confidence: string; reason: string }[] {
-  const results = cropDataset.map((crop) => {
+}): { label: string; displayName: string; score: number; confidence: string; reason: string; details: ReturnType<typeof getCropDetails> }[] {
+  const results = cropRanges.map((crop) => {
     let totalScore = 0;
     let paramCount = 0;
     const reasons: string[] = [];
@@ -625,46 +378,26 @@ export function recommendCrops(input: {
       const spread = (range[1] - range[0]) / 2 || 1;
 
       if (value >= range[0] && value <= range[1]) {
-        // Within range — perfect
         const closeness = 1 - Math.abs(value - mid) / spread;
         totalScore += closeness * 10;
         reasons.push(`${paramName} (${value}${unit}) is in optimal range (${range[0]}-${range[1]}${unit})`);
       } else {
-        // Outside range — penalize proportionally
         const dist = value < range[0] ? range[0] - value : value - range[1];
-        const penalty = Math.min(dist / spread, 3); // cap penalty
+        const penalty = Math.min(dist / spread, 3);
         totalScore += Math.max(0, 10 - penalty * 5);
         if (dist / spread < 0.5) {
-          reasons.push(`${paramName} (${value}${unit}) is slightly outside optimal range (${range[0]}-${range[1]}${unit})`);
+          reasons.push(`${paramName} (${value}${unit}) is close to optimal (${range[0]}-${range[1]}${unit})`);
         }
       }
     };
 
-    checkRange(input.nitrogen, crop.nitrogen, "Nitrogen", "");
-    checkRange(input.phosphorus, crop.phosphorus, "Phosphorus", "");
-    checkRange(input.potassium, crop.potassium, "Potassium", "");
+    checkRange(input.nitrogen, crop.nitrogen, "Nitrogen", " kg/ha");
+    checkRange(input.phosphorus, crop.phosphorus, "Phosphorus", " kg/ha");
+    checkRange(input.potassium, crop.potassium, "Potassium", " kg/ha");
     checkRange(input.temperature, crop.temperature, "Temperature", "°C");
     checkRange(input.humidity, crop.humidity, "Humidity", "%");
     checkRange(input.ph, crop.ph, "pH", "");
-    checkRange(input.rainfall, crop.rainfall, "Rainfall", "mm");
-
-    // Bonus for matching soil type
-    if (input.soil) {
-      paramCount++;
-      if (crop.soilTypes.some((s) => input.soil!.toLowerCase().includes(s.toLowerCase()))) {
-        totalScore += 10;
-        reasons.push(`Suitable for ${input.soil}`);
-      }
-    }
-
-    // Bonus for matching season
-    if (input.season) {
-      paramCount++;
-      if (crop.season.some((s) => input.season!.toLowerCase().includes(s.toLowerCase().split(" ")[0]))) {
-        totalScore += 10;
-        reasons.push(`Grows well in ${input.season}`);
-      }
-    }
+    checkRange(input.rainfall, crop.rainfall, "Rainfall", " mm");
 
     const maxScore = paramCount * 10;
     const normalizedScore = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
@@ -676,14 +409,14 @@ export function recommendCrops(input: {
       normalizedScore >= 40 ? "Low" : "Very Low";
 
     return {
-      crop,
+      label: crop.label,
+      displayName: getDisplayName(crop.label),
       score: normalizedScore,
       confidence: `${Math.round(normalizedScore)}%`,
-      reason: reasons.slice(0, 4).join(". ") + ".",
+      reason: reasons.slice(0, 4).join(". ") + (reasons.length > 0 ? "." : ""),
+      details: getCropDetails(crop.label),
     };
   });
 
-  return results
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+  return results.sort((a, b) => b.score - a.score).slice(0, 5);
 }

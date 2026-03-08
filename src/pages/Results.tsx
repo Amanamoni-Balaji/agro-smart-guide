@@ -130,7 +130,7 @@ const Results = () => {
             {/* Crop Schedule */}
             <div className="gradient-card rounded-xl border border-border shadow-card p-8">
               <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-[hsl(var(--agro-gold))]" /> Crop Schedule — {topCrop.crop.name}
+                <Calendar className="h-5 w-5 text-[hsl(var(--agro-gold))]" /> Crop Schedule — {topCrop.displayName}
               </h2>
               <div className="space-y-4">
                 {topCrop.crop.schedule.map((s, i) => (

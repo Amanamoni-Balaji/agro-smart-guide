@@ -1,44 +1,46 @@
 import { useNavigate } from "react-router-dom";
 import { Sprout, Bug } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import cropRecommendImg from "@/assets/crop-recommend.png";
 import cropDiseaseImg from "@/assets/crop-disease.png";
 
-const cards = [
-  {
-    title: "Crop Recommendation",
-    desc: "Get AI-powered suggestions for the best crop to grow based on your soil, weather, and budget.",
-    icon: Sprout,
-    img: cropRecommendImg,
-    path: "/recommend",
-    color: "from-primary to-secondary",
-  },
-  {
-    title: "Crop Disease Prediction",
-    desc: "Upload an image of your crop and our AI will identify the disease and suggest treatments.",
-    icon: Bug,
-    img: cropDiseaseImg,
-    path: "/disease",
-    color: "from-secondary to-agro-sky",
-  },
-];
-
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const { t } = useLanguage();
+
+  const cards = [
+    {
+      title: t('cropRecommendation'),
+      desc: t('cropRecommendationDesc'),
+      icon: Sprout,
+      img: cropRecommendImg,
+      path: "/recommend",
+      color: "from-primary to-secondary",
+    },
+    {
+      title: t('cropDiseasePrediction'),
+      desc: t('cropDiseaseDesc'),
+      icon: Bug,
+      img: cropDiseaseImg,
+      path: "/disease",
+      color: "from-secondary to-agro-sky",
+    },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header isLoggedIn onLogout={() => navigate("/")} />
-
+      <Header />
       <main className="flex-1 container py-12">
         <h1 className="text-3xl font-heading font-extrabold text-center mb-2 animate-fade-in">
-          Welcome, Farmer! 🌾
+          {t('welcomeFarmer')}
         </h1>
         <p className="text-center text-muted-foreground mb-10 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-          Choose a service to get started
+          {t('chooseService')}
         </p>
-
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {cards.map((c, i) => (
             <button
@@ -59,7 +61,6 @@ const Dashboard = () => {
           ))}
         </div>
       </main>
-
       <Footer />
     </div>
   );

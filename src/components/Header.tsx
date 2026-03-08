@@ -7,15 +7,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-interface HeaderProps {
-  isLoggedIn?: boolean;
-  userName?: string;
-  onLogout?: () => void;
-}
-
-const Header = ({ isLoggedIn = false, userName = "Farmer", onLogout }: HeaderProps) => {
+const Header = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { t } = useLanguage();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
@@ -25,12 +28,12 @@ const Header = ({ isLoggedIn = false, userName = "Farmer", onLogout }: HeaderPro
             <Leaf className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-xl font-heading font-extrabold text-primary">
-            Agro_Guardian
+            {t('appName')}
           </span>
         </Link>
 
         <div className="flex items-center gap-2">
-          {isLoggedIn ? (
+          {user ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -40,7 +43,7 @@ const Header = ({ isLoggedIn = false, userName = "Farmer", onLogout }: HeaderPro
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
-                    <Globe className="mr-2 h-4 w-4" /> Language
+                    <Globe className="mr-2 h-4 w-4" /> {t('language')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -53,17 +56,17 @@ const Header = ({ isLoggedIn = false, userName = "Farmer", onLogout }: HeaderPro
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate("/profile")}>
-                    <User className="mr-2 h-4 w-4" /> Profile
+                    <User className="mr-2 h-4 w-4" /> {t('profile')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={onLogout}>
-                    <LogOut className="mr-2 h-4 w-4" /> Logout
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" /> {t('logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
           ) : (
             <Button onClick={() => navigate("/login")} className="gap-2 gradient-hero border-0">
-              <LogIn className="h-4 w-4" /> Login / Sign Up
+              <LogIn className="h-4 w-4" /> {t('login')} / {t('signup')}
             </Button>
           )}
         </div>

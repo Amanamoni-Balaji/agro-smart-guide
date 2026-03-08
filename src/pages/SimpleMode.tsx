@@ -21,7 +21,7 @@ const SimpleMode = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header isLoggedIn onLogout={() => navigate("/")} />
+      <Header />
       <main className="flex-1 container py-12 max-w-lg">
         <h1 className="text-2xl font-heading font-extrabold text-center mb-8">Simple Mode — Crop Recommendation</h1>
         <form onSubmit={handleSubmit} className="space-y-5 gradient-card rounded-xl border border-border shadow-card p-8 animate-fade-in">

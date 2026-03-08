@@ -28,7 +28,7 @@ const Results = () => {
 
   const recommendations = useMemo(() => {
     if (isDisease || !state) return [];
-    return recommendCrops({
+    return recommendCropsFromDataset({
       nitrogen: state.nitrogen ? parseFloat(state.nitrogen) : undefined,
       phosphorus: state.phosphorus ? parseFloat(state.phosphorus) : undefined,
       potassium: state.potassium ? parseFloat(state.potassium) : undefined,

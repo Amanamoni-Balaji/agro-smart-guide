@@ -162,7 +162,7 @@ const Results = () => {
                 <FlaskConical className="h-5 w-5 text-[hsl(var(--agro-earth))]" /> Recommended Fertilizers
               </h2>
               <ul className="space-y-1">
-                {topCrop.crop.fertilizers.map((f) => (
+                {topCrop.details.fertilizers.map((f) => (
                   <li key={f} className="text-sm text-muted-foreground">• {f}</li>
                 ))}
               </ul>

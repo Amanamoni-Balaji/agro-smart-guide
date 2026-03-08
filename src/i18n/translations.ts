@@ -1,18 +1,28 @@
-export type Language = 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'mr' | 'bn' | 'gu' | 'pa' | 'ml' | 'or' | 'as';
+export type Language = 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'mr' | 'bn' | 'gu' | 'pa' | 'ml' | 'or' | 'as' | 'ur' | 'kok' | 'mni' | 'ne' | 'mai' | 'doi' | 'sat' | 'ks' | 'sd' | 'bo';
 
 export const languageNames: Record<Language, string> = {
   en: 'English',
-  hi: 'हिन्दी',
-  te: 'తెలుగు',
-  ta: 'தமிழ்',
-  kn: 'ಕನ್ನಡ',
-  mr: 'मराठी',
-  bn: 'বাংলা',
-  gu: 'ગુજરાતી',
-  pa: 'ਪੰਜਾਬੀ',
-  ml: 'മലയാളം',
-  or: 'ଓଡ଼ିଆ',
-  as: 'অসমীয়া',
+  hi: 'हिन्दी (Hindi)',
+  te: 'తెలుగు (Telugu)',
+  ta: 'தமிழ் (Tamil)',
+  kn: 'ಕನ್ನಡ (Kannada)',
+  mr: 'मराठी (Marathi)',
+  bn: 'বাংলা (Bengali)',
+  gu: 'ગુજરાતી (Gujarati)',
+  pa: 'ਪੰਜਾਬੀ (Punjabi)',
+  ml: 'മലയാളം (Malayalam)',
+  or: 'ଓଡ଼ିଆ (Odia)',
+  as: 'অসমীয়া (Assamese)',
+  ur: 'اردو (Urdu)',
+  kok: 'कोंकणी (Konkani)',
+  mni: 'মৈতৈলোন্ (Manipuri)',
+  ne: 'नेपाली (Nepali)',
+  mai: 'मैथिली (Maithili)',
+  doi: 'डोगरी (Dogri)',
+  sat: 'ᱥᱟᱱᱛᱟᱲᱤ (Santali)',
+  ks: 'کٲشُر (Kashmiri)',
+  sd: 'سنڌي (Sindhi)',
+  bo: 'བོད་སྐད (Bodo/Tibetan)',
 };
 
 type TranslationKeys = {

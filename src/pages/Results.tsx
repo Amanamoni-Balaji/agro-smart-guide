@@ -65,44 +65,122 @@ const Results = () => {
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
 
-        {isDisease ? (
+        {isDisease && state?.diseaseResult ? (
           <div className="space-y-6 animate-fade-in">
+            {/* Disease Info Card */}
             <div className="gradient-card rounded-xl border border-border shadow-card p-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="rounded-full bg-destructive/10 p-3">
                   <Bug className="h-6 w-6 text-destructive" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-heading font-extrabold">{mockDiseaseResult.disease}</h1>
-                  <p className="text-sm text-muted-foreground">{mockDiseaseResult.stage}</p>
+                  <h1 className="text-2xl font-heading font-extrabold">
+                    {state.diseaseResult.isHealthy ? "Healthy Plant ✅" : state.diseaseResult.diseaseName}
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    {state.diseaseResult.cropName} • {state.diseaseResult.stage}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm rounded-lg bg-destructive/5 p-3 border border-destructive/20 mb-4">
-                <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
-                <span>{mockDiseaseResult.infection}</span>
+
+              {!state.diseaseResult.isPlant && (
+                <div className="flex items-center gap-2 text-sm rounded-lg bg-accent/30 p-3 border border-accent mb-4">
+                  <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+                  <span>This image does not appear to show a plant. Please upload a crop/plant photo.</span>
+                </div>
+              )}
+
+              {state.diseaseResult.isPlant && !state.diseaseResult.isHealthy && (
+                <>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="p-3 rounded-lg bg-muted">
+                      <p className="text-xs text-muted-foreground">AI Confidence</p>
+                      <p className="font-bold text-primary">{state.diseaseResult.confidence}%</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted">
+                      <p className="text-xs text-muted-foreground">Infection Level</p>
+                      <p className="font-bold text-destructive">{state.diseaseResult.infectionLevel}%</p>
+                    </div>
+                  </div>
+                  <Progress value={state.diseaseResult.infectionLevel} className="h-3" />
+                </>
+              )}
+
+              {/* Symptoms */}
+              {state.diseaseResult.symptoms?.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-semibold mb-2">🔍 Observed Symptoms</p>
+                  <ul className="space-y-1">
+                    {state.diseaseResult.symptoms.map((s: string, i: number) => (
+                      <li key={i} className="text-sm text-muted-foreground flex gap-2">
+                        <span className="text-destructive">•</span> {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Uploaded image */}
+            {state.image && (
+              <div className="gradient-card rounded-xl border border-border shadow-card p-4">
+                <img src={state.image} alt="Uploaded crop" className="max-h-48 mx-auto rounded-lg object-contain" />
               </div>
-            </div>
+            )}
 
-            <div className="gradient-card rounded-xl border border-border shadow-card p-8">
-              <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-primary" /> Prevention & Treatment
-              </h2>
-              <ol className="space-y-3">
-                {mockDiseaseResult.prevention.map((p, i) => (
-                  <li key={i} className="flex gap-3 text-sm">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{i + 1}</span>
-                    <span>{p}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            {/* Prevention */}
+            {state.diseaseResult.prevention?.length > 0 && (
+              <div className="gradient-card rounded-xl border border-border shadow-card p-8">
+                <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary" /> Prevention & Treatment
+                </h2>
+                <ol className="space-y-3">
+                  {state.diseaseResult.prevention.map((p: string, i: number) => (
+                    <li key={i} className="flex gap-3 text-sm">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{i + 1}</span>
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
 
-            <div className="gradient-card rounded-xl border border-border shadow-card p-8">
-              <h2 className="text-lg font-heading font-bold mb-2 flex items-center gap-2">
-                <FlaskConical className="h-5 w-5 text-secondary" /> Fertilizer Suggestion
-              </h2>
-              <p className="text-sm text-muted-foreground">{mockDiseaseResult.fertilizer}</p>
-            </div>
+            {/* Fertilizer Suggestions */}
+            {state.diseaseResult.fertilizers?.length > 0 && (
+              <div className="gradient-card rounded-xl border border-border shadow-card p-8">
+                <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
+                  <FlaskConical className="h-5 w-5 text-secondary" /> 🧪 Fertilizer Suggestions
+                </h2>
+                <div className="space-y-3">
+                  {state.diseaseResult.fertilizers.map((f: any, i: number) => (
+                    <div key={i} className="p-3 rounded-lg bg-muted/50 border border-border">
+                      <p className="font-semibold text-sm">{f.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{f.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Treatment Recommendations */}
+            {state.diseaseResult.treatments?.length > 0 && (
+              <div className="gradient-card rounded-xl border border-border shadow-card p-8">
+                <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
+                  <ShieldAlert className="h-5 w-5 text-destructive" /> 💊 Treatment Recommendations
+                </h2>
+                <div className="space-y-3">
+                  {state.diseaseResult.treatments.map((t: any, i: number) => (
+                    <div key={i} className="p-3 rounded-lg bg-muted/50 border border-border">
+                      <p className="font-semibold text-sm">{t.name}</p>
+                      <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
+                        <div><span className="text-muted-foreground">Dosage:</span> {t.dosage}</div>
+                        <div><span className="text-muted-foreground">Method:</span> {t.method}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : loading ? (
           <div className="text-center py-16">

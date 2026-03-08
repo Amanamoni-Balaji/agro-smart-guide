@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2, Medal, Loader2 } from "lucide-react";
+import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2, Medal, Loader2, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { recommendCropsKNN, getDisplayName, getCropDetails } from "@/data/cropDataset";
+import { recommendCropsKNN, recommendCropsSimple, getDisplayName, getCropDetails } from "@/data/cropDataset";
+import type { SimpleRecommendation } from "@/data/cropDataset";
 import { useState, useEffect } from "react";
 
 const mockDiseaseResult = {

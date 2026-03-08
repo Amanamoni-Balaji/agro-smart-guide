@@ -20,16 +20,29 @@ interface WeatherData {
   suggestedCrops: { name: string; reason: string }[];
 }
 
+interface Suggestion {
+  label: string;
+  sublabel?: string;
+  source: "local" | "api";
+}
+
+const PLACE_TYPES = new Set([
+  "city", "town", "village", "hamlet", "suburb", "neighbourhood",
+  "county", "state_district", "state", "municipality",
+  "city_district", "district",
+]);
+
 const WeatherFeature = () => {
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [apiLoading, setApiLoading] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
@@ -40,6 +53,52 @@ const WeatherFeature = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const getLocalSuggestions = (query: string): Suggestion[] => {
+    const lower = query.toLowerCase();
+    return indianLocations
+      .filter((loc) => loc.toLowerCase().includes(lower))
+      .slice(0, 5)
+      .map((loc) => {
+        const [city, ...rest] = loc.split(", ");
+        return { label: city, sublabel: rest.join(", "), source: "local" as const };
+      });
+  };
+
+  const fetchApiSuggestions = async (query: string) => {
+    if (query.length < 3) return;
+    setApiLoading(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&limit=10&addressdetails=1&q=${encodeURIComponent(query)}`
+      );
+      const data = await res.json();
+      const filtered = data
+        .filter((item: any) => PLACE_TYPES.has(item.addresstype) || PLACE_TYPES.has(item.type))
+        .map((item: any) => {
+          const ad = item.address || {};
+          const city = ad.city || ad.town || ad.village || ad.hamlet || ad.county || ad.state_district || item.name;
+          const state = ad.state || "";
+          const district = ad.state_district || ad.county || "";
+          const sublabel = [district, state].filter(Boolean).join(", ");
+          return { label: city, sublabel, source: "api" as const };
+        });
+
+      // Merge local + API, deduplicate by label
+      setSuggestions((prev) => {
+        const localOnes = prev.filter((s) => s.source === "local");
+        const seen = new Set(localOnes.map((s) => s.label.toLowerCase()));
+        const newApi = filtered.filter((s: Suggestion) => !seen.has(s.label.toLowerCase()));
+        const merged = [...localOnes, ...newApi].slice(0, 10);
+        if (merged.length > 0) setShowSuggestions(true);
+        return merged;
+      });
+    } catch {
+      // silently fail API, local results still show
+    } finally {
+      setApiLoading(false);
+    }
+  };
+
   const handleInputChange = (value: string) => {
     setLocation(value);
     if (value.length < 1) {
@@ -47,19 +106,22 @@ const WeatherFeature = () => {
       setShowSuggestions(false);
       return;
     }
-    const lower = value.toLowerCase();
-    const matches = indianLocations
-      .filter((loc) => loc.toLowerCase().includes(lower))
-      .slice(0, 8);
-    setSuggestions(matches);
-    setShowSuggestions(matches.length > 0);
+    // Instant local results
+    const local = getLocalSuggestions(value);
+    setSuggestions(local);
+    setShowSuggestions(local.length > 0);
+
+    // Debounced API results
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchApiSuggestions(value), 400);
   };
 
-  const selectSuggestion = (loc: string) => {
-    setLocation(loc);
+  const selectSuggestion = (s: Suggestion) => {
+    const full = s.sublabel ? `${s.label}, ${s.sublabel}` : s.label;
+    setLocation(full);
     setShowSuggestions(false);
     setSuggestions([]);
-    fetchWeather(loc);
+    fetchWeather(full);
   };
 
   const fetchWeather = async (loc: string) => {
@@ -103,7 +165,6 @@ const WeatherFeature = () => {
     );
   };
 
-  // Highlight matching text in suggestion
   const highlightMatch = (text: string, query: string) => {
     if (!query) return text;
     const idx = text.toLowerCase().indexOf(query.toLowerCase());
@@ -156,25 +217,27 @@ const WeatherFeature = () => {
               </div>
 
               {showSuggestions && (
-                <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden max-h-[320px] overflow-y-auto">
-                  {suggestions.map((s, i) => {
-                    const [city, state] = s.split(", ");
-                    return (
-                      <button
-                        key={i}
-                        className="w-full text-left px-4 py-3 hover:bg-muted/60 transition-colors flex items-center gap-3 border-b border-border last:border-0"
-                        onClick={() => selectSuggestion(s)}
-                      >
-                        <MapPin className="h-4 w-4 text-primary shrink-0" />
-                        <div className="min-w-0">
-                          <span className="text-sm">{highlightMatch(city, location)}</span>
-                          {state && (
-                            <span className="text-xs text-muted-foreground ml-1.5">{state}</span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden max-h-[360px] overflow-y-auto">
+                  {suggestions.map((s, i) => (
+                    <button
+                      key={`${s.label}-${s.sublabel}-${i}`}
+                      className="w-full text-left px-4 py-2.5 hover:bg-muted/60 transition-colors flex items-center gap-3 border-b border-border/50 last:border-0"
+                      onClick={() => selectSuggestion(s)}
+                    >
+                      <MapPin className="h-4 w-4 text-primary shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-sm">{highlightMatch(s.label, location)}</span>
+                        {s.sublabel && (
+                          <span className="text-xs text-muted-foreground ml-1.5">— {s.sublabel}</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                  {apiLoading && (
+                    <div className="px-4 py-2.5 text-xs text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="h-3 w-3 animate-spin" /> Loading more results...
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -3,7 +3,7 @@ import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircl
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { recommendCrops } from "@/data/cropDataset";
+import { recommendCropsFromDataset } from "@/data/cropDataset";
 import { useMemo } from "react";
 
 const mockDiseaseResult = {

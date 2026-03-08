@@ -97,7 +97,7 @@ const Results = () => {
                   <Sprout className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-heading font-extrabold">{topCrop.crop.name}</h1>
+                  <h1 className="text-2xl font-heading font-extrabold">{topCrop.displayName}</h1>
                   <p className="text-sm text-muted-foreground">Confidence: {topCrop.confidence}</p>
                 </div>
               </div>

@@ -443,7 +443,20 @@ export interface CropProductionRecord {
   production: number;
 }
 
+export interface CropYieldRecord {
+  crop: string;
+  season: string;
+  state: string;
+  area: number;
+  production: number;
+  annualRainfall: number;
+  fertilizer: number;
+  pesticide: number;
+  yield: number;
+}
+
 let cachedProductionData: CropProductionRecord[] | null = null;
+let cachedYieldData: CropYieldRecord[] | null = null;
 
 export async function loadCropProductionData(): Promise<CropProductionRecord[]> {
   if (cachedProductionData) return cachedProductionData;
@@ -454,7 +467,6 @@ export async function loadCropProductionData(): Promise<CropProductionRecord[]> 
 
   cachedProductionData = [];
   for (let i = 1; i < lines.length; i++) {
-    // CSV format: index,State_Name,District_Name,Crop_Year,Season,Crop,Area,Production
     const parts = lines[i].split(",");
     if (parts.length < 8) continue;
     const area = parseFloat(parts[6]);
@@ -473,9 +485,45 @@ export async function loadCropProductionData(): Promise<CropProductionRecord[]> 
   return cachedProductionData;
 }
 
+export async function loadCropYieldData(): Promise<CropYieldRecord[]> {
+  if (cachedYieldData) return cachedYieldData;
+
+  const res = await fetch("/data/crop_yield.csv");
+  const text = await res.text();
+  const lines = text.trim().split("\n");
+
+  cachedYieldData = [];
+  for (let i = 1; i < lines.length; i++) {
+    // CSV: Crop,Crop_Year,Season,State,Area,Production,Annual_Rainfall,Fertilizer,Pesticide,Yield
+    const parts = lines[i].split(",");
+    if (parts.length < 10) continue;
+    const area = parseFloat(parts[4]);
+    const production = parseFloat(parts[5]);
+    const annualRainfall = parseFloat(parts[6]);
+    const fertilizer = parseFloat(parts[7]);
+    const pesticide = parseFloat(parts[8]);
+    const yieldVal = parseFloat(parts[9]);
+    if (isNaN(area) || isNaN(production)) continue;
+    cachedYieldData.push({
+      crop: parts[0].trim(),
+      season: parts[2].trim(),
+      state: parts[3].trim(),
+      area,
+      production,
+      annualRainfall: isNaN(annualRainfall) ? 0 : annualRainfall,
+      fertilizer: isNaN(fertilizer) ? 0 : fertilizer,
+      pesticide: isNaN(pesticide) ? 0 : pesticide,
+      yield: isNaN(yieldVal) ? 0 : yieldVal,
+    });
+  }
+
+  return cachedYieldData;
+}
+
 export async function getStates(): Promise<string[]> {
-  const data = await loadCropProductionData();
-  return [...new Set(data.map((d) => d.state))].sort();
+  const [prodData, yieldData] = await Promise.all([loadCropProductionData(), loadCropYieldData()]);
+  const states = new Set([...prodData.map((d) => d.state), ...yieldData.map((d) => d.state)]);
+  return [...states].sort();
 }
 
 export async function getDistricts(state: string): Promise<string[]> {
@@ -484,8 +532,9 @@ export async function getDistricts(state: string): Promise<string[]> {
 }
 
 export async function getSeasons(): Promise<string[]> {
-  const data = await loadCropProductionData();
-  return [...new Set(data.map((d) => d.season))].sort();
+  const [prodData, yieldData] = await Promise.all([loadCropProductionData(), loadCropYieldData()]);
+  const seasons = new Set([...prodData.map((d) => d.season), ...yieldData.map((d) => d.season)]);
+  return [...seasons].sort();
 }
 
 export type SimpleRecommendation = {
@@ -495,6 +544,10 @@ export type SimpleRecommendation = {
   productivity: string;
   confidence: string;
   reason: string;
+  avgRainfall: string;
+  avgFertilizer: string;
+  avgPesticide: string;
+  avgYield: string;
   details: ReturnType<typeof getCropDetails>;
 };
 
@@ -503,24 +556,50 @@ export async function recommendCropsSimple(input: {
   district?: string;
   season?: string;
 }): Promise<SimpleRecommendation[]> {
-  const data = await loadCropProductionData();
+  const [prodData, yieldData] = await Promise.all([loadCropProductionData(), loadCropYieldData()]);
 
-  let filtered = data.filter((d) => d.state === input.state);
-  if (input.district) filtered = filtered.filter((d) => d.district === input.district);
-  if (input.season) filtered = filtered.filter((d) => d.season === input.season);
+  // Filter production data
+  let filteredProd = prodData.filter((d) => d.state === input.state);
+  if (input.district) filteredProd = filteredProd.filter((d) => d.district === input.district);
+  if (input.season) filteredProd = filteredProd.filter((d) => d.season === input.season);
 
-  if (filtered.length === 0) return [];
+  // Filter yield data
+  let filteredYield = yieldData.filter((d) => d.state === input.state);
+  if (input.season) filteredYield = filteredYield.filter((d) => d.season === input.season);
 
-  // Aggregate by crop
+  // Build yield lookup by crop
+  const yieldLookup: Record<string, { rainfall: number[]; fertilizer: number[]; pesticide: number[]; yield: number[] }> = {};
+  filteredYield.forEach((d) => {
+    if (!yieldLookup[d.crop]) yieldLookup[d.crop] = { rainfall: [], fertilizer: [], pesticide: [], yield: [] };
+    yieldLookup[d.crop].rainfall.push(d.annualRainfall);
+    yieldLookup[d.crop].fertilizer.push(d.fertilizer);
+    yieldLookup[d.crop].pesticide.push(d.pesticide);
+    yieldLookup[d.crop].yield.push(d.yield);
+  });
+
+  const avg = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+  if (filteredProd.length === 0 && filteredYield.length === 0) return [];
+
+  // Aggregate production by crop
   const cropAgg: Record<string, { totalProd: number; totalArea: number; count: number }> = {};
-  filtered.forEach((d) => {
+  filteredProd.forEach((d) => {
     if (!cropAgg[d.crop]) cropAgg[d.crop] = { totalProd: 0, totalArea: 0, count: 0 };
     cropAgg[d.crop].totalProd += d.production;
     cropAgg[d.crop].totalArea += d.area;
     cropAgg[d.crop].count += 1;
   });
 
-  // Sort by total production (descending)
+  // Also add crops from yield data that may not be in production data
+  filteredYield.forEach((d) => {
+    if (!cropAgg[d.crop]) cropAgg[d.crop] = { totalProd: 0, totalArea: 0, count: 0 };
+    if (cropAgg[d.crop].count === 0) {
+      cropAgg[d.crop].totalProd += d.production;
+      cropAgg[d.crop].totalArea += d.area;
+      cropAgg[d.crop].count += 1;
+    }
+  });
+
   const sorted = Object.entries(cropAgg)
     .sort((a, b) => b[1].totalProd - a[1].totalProd)
     .slice(0, 8);
@@ -531,6 +610,7 @@ export async function recommendCropsSimple(input: {
     const pct = Math.round((agg.totalProd / maxProd) * 100);
     const productivity = agg.totalArea > 0 ? (agg.totalProd / agg.totalArea).toFixed(1) : "N/A";
     const labelKey = crop.toLowerCase().replace(/[^a-z]/g, "");
+    const yd = yieldLookup[crop];
 
     return {
       crop,
@@ -539,6 +619,10 @@ export async function recommendCropsSimple(input: {
       productivity: `${productivity} units/ha`,
       confidence: `${pct}%`,
       reason: `Grown across ${agg.count} records in ${input.district || input.state}. Total production: ${Math.round(agg.totalProd).toLocaleString()} tonnes over ${Math.round(agg.totalArea).toLocaleString()} ha.`,
+      avgRainfall: yd ? `${avg(yd.rainfall).toFixed(0)} mm` : "N/A",
+      avgFertilizer: yd ? `${avg(yd.fertilizer).toFixed(0)} kg` : "N/A",
+      avgPesticide: yd ? `${avg(yd.pesticide).toFixed(0)} kg` : "N/A",
+      avgYield: yd ? `${avg(yd.yield).toFixed(2)} t/ha` : "N/A",
       details: getCropDetails(labelKey),
     };
   });

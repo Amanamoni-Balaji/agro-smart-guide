@@ -26,15 +26,19 @@ serve(async (req) => {
     const mimeType = match[1];
     const base64Data = match[2];
 
-    const systemPrompt = `You are an expert agricultural pathologist. Analyze the provided crop/plant image and detect any diseases.
+    const systemPrompt = `You are an expert agricultural pathologist and entomologist. Analyze the provided crop/plant image and detect any diseases OR pest infestations.
 
 You MUST respond using the "detect_disease" tool. Analyze carefully:
 - Identify the crop/plant species
-- Detect any visible disease symptoms (spots, discoloration, wilting, lesions, mold, etc.)
-- Determine disease stage and infection severity
-- Provide actionable treatment recommendations
+- Detect any visible disease symptoms (spots, discoloration, wilting, lesions, mold, rot, blight, rust, etc.)
+- Detect any pest/insect infestations (worms, caterpillars, aphids, beetles, borers, mites, whiteflies, leaf miners, armyworms, bollworms, stem borers, fruit flies, thrips, etc.)
+- Look for signs of pest damage: chewed leaves, holes in leaves/stems/fruits, webbing, frass/droppings, tunneling, curling, wilting from boring insects
+- Determine disease/pest stage and severity of damage
+- Provide actionable treatment and pest control recommendations (both chemical and organic/biological options)
 
-If the image does not show a plant/crop, or shows a healthy plant, indicate that clearly.`;
+IMPORTANT: A plant with visible worms, caterpillars, insects, or pest damage is NOT healthy. Report it as infected/infested with the appropriate pest name as the "diseaseName".
+
+If the image does not show a plant/crop, indicate that. Only mark as healthy if there are truly NO signs of disease or pest damage.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

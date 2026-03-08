@@ -153,7 +153,7 @@ const Results = () => {
               <h2 className="text-lg font-heading font-bold mb-2 flex items-center gap-2">
                 <Sprout className="h-5 w-5 text-secondary" /> Next Crop Rotation
               </h2>
-              <p className="text-sm text-muted-foreground">{topCrop.crop.nextCrop}</p>
+              <p className="text-sm text-muted-foreground">{topCrop.details.nextCrop}</p>
             </div>
 
             {/* Recommended Fertilizers */}

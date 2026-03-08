@@ -36,8 +36,6 @@ const Results = () => {
       humidity: state.humidity ? parseFloat(state.humidity) : undefined,
       ph: state.ph ? parseFloat(state.ph) : undefined,
       rainfall: state.rainfall ? parseFloat(state.rainfall) : undefined,
-      soil: state.soil,
-      season: state.season,
     });
   }, [state, isDisease]);
 

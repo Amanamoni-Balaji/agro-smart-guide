@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2, Medal, Loader2 } from "lucide-react";
+import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2, Medal, Loader2, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { recommendCropsKNN, getDisplayName, getCropDetails } from "@/data/cropDataset";
+import { recommendCropsKNN, recommendCropsSimple, getDisplayName, getCropDetails } from "@/data/cropDataset";
+import type { SimpleRecommendation } from "@/data/cropDataset";
 import { useState, useEffect } from "react";
 
 const mockDiseaseResult = {
@@ -33,26 +34,39 @@ const Results = () => {
   const location = useLocation();
   const state = location.state as any;
   const isDisease = state?.mode === "disease";
+  const isSimple = state?.mode === "simple";
 
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [loading, setLoading] = useState(!isDisease);
 
   useEffect(() => {
     if (isDisease || !state) return;
     setLoading(true);
-    recommendCropsKNN({
-      nitrogen: state.nitrogen ? parseFloat(state.nitrogen) : undefined,
-      phosphorus: state.phosphorus ? parseFloat(state.phosphorus) : undefined,
-      potassium: state.potassium ? parseFloat(state.potassium) : undefined,
-      temperature: state.temperature ? parseFloat(state.temperature) : undefined,
-      humidity: state.humidity ? parseFloat(state.humidity) : undefined,
-      ph: state.ph ? parseFloat(state.ph) : undefined,
-      rainfall: state.rainfall ? parseFloat(state.rainfall) : undefined,
-    }).then((results) => {
-      setRecommendations(results);
-      setLoading(false);
-    });
-  }, [state, isDisease]);
+
+    if (isSimple) {
+      recommendCropsSimple({
+        state: state.state,
+        district: state.district || undefined,
+        season: state.season || undefined,
+      }).then((results) => {
+        setRecommendations(results);
+        setLoading(false);
+      });
+    } else {
+      recommendCropsKNN({
+        nitrogen: state.nitrogen ? parseFloat(state.nitrogen) : undefined,
+        phosphorus: state.phosphorus ? parseFloat(state.phosphorus) : undefined,
+        potassium: state.potassium ? parseFloat(state.potassium) : undefined,
+        temperature: state.temperature ? parseFloat(state.temperature) : undefined,
+        humidity: state.humidity ? parseFloat(state.humidity) : undefined,
+        ph: state.ph ? parseFloat(state.ph) : undefined,
+        rainfall: state.rainfall ? parseFloat(state.rainfall) : undefined,
+      }).then((results) => {
+        setRecommendations(results);
+        setLoading(false);
+      });
+    }
+  }, [state, isDisease, isSimple]);
 
   const topCrop = recommendations[0];
 
@@ -106,7 +120,73 @@ const Results = () => {
         ) : loading ? (
           <div className="text-center py-16">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-3" />
-            <p className="text-muted-foreground">Analyzing your data against 2200+ crop samples...</p>
+            <p className="text-muted-foreground">
+              {isSimple ? "Analyzing crop production data for your region..." : "Analyzing your data against 2200+ crop samples..."}
+            </p>
+          </div>
+        ) : isSimple && topCrop ? (
+          <div className="space-y-6 animate-fade-in">
+            {/* Simple Mode: Location header */}
+            <div className="gradient-card rounded-xl border border-border shadow-card p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="rounded-full bg-primary/10 p-3">
+                  <BarChart3 className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-heading font-extrabold">Top Crops for {state.district || state.state}</h1>
+                  <p className="text-sm text-muted-foreground">
+                    {state.season ? `Season: ${state.season}` : "All seasons"} • Based on {recommendations.length} crops from production data
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Crop Rankings */}
+            <div className="gradient-card rounded-xl border border-border shadow-card p-8">
+              <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
+                <Sprout className="h-5 w-5 text-primary" /> Recommended Crops (by Production)
+              </h2>
+              <div className="space-y-3">
+                {recommendations.map((rec: SimpleRecommendation, i: number) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold mt-0.5">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-sm">{rec.crop}</p>
+                        <span className="text-xs text-muted-foreground">{rec.confidence}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{rec.reason}</p>
+                      <div className="flex gap-3 mt-2 text-xs">
+                        <span className="px-2 py-0.5 rounded bg-muted font-medium">📊 Productivity: {rec.productivity}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Top crop details */}
+            {topCrop.details && topCrop.details.schedule.length > 0 && (
+              <div className="gradient-card rounded-xl border border-border shadow-card p-8">
+                <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-[hsl(var(--agro-gold))]" /> Crop Schedule — {topCrop.crop}
+                </h2>
+                <div className="space-y-4">
+                  {topCrop.details.schedule.map((s: any, i: number) => (
+                    <div key={i} className="flex gap-4 items-start">
+                      <div className="flex flex-col items-center">
+                        <div className="w-3 h-3 rounded-full bg-primary" />
+                        {i < topCrop.details.schedule.length - 1 && <div className="w-0.5 h-10 bg-border" />}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{s.step} <span className="text-muted-foreground font-normal">— {s.time}</span></p>
+                        <p className="text-xs text-muted-foreground">{s.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : topCrop ? (
           <div className="space-y-6 animate-fade-in">

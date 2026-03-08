@@ -116,7 +116,7 @@ const Results = () => {
                       <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold mt-0.5">{i + 2}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className="font-semibold text-sm">{rec.crop.name}</p>
+                          <p className="font-semibold text-sm">{rec.displayName}</p>
                           <span className="text-xs text-muted-foreground">{rec.confidence}</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">{rec.reason}</p>

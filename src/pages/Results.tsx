@@ -156,8 +156,12 @@ const Results = () => {
                         <span className="text-xs text-muted-foreground">{rec.confidence}</span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{rec.reason}</p>
-                      <div className="flex gap-3 mt-2 text-xs">
+                      <div className="flex flex-wrap gap-2 mt-2 text-xs">
                         <span className="px-2 py-0.5 rounded bg-muted font-medium">📊 Productivity: {rec.productivity}</span>
+                        {rec.avgYield !== "N/A" && <span className="px-2 py-0.5 rounded bg-muted font-medium">🌾 Yield: {rec.avgYield}</span>}
+                        {rec.avgRainfall !== "N/A" && <span className="px-2 py-0.5 rounded bg-muted font-medium">🌧️ Rainfall: {rec.avgRainfall}</span>}
+                        {rec.avgFertilizer !== "N/A" && <span className="px-2 py-0.5 rounded bg-muted font-medium">🧪 Fertilizer: {rec.avgFertilizer}</span>}
+                        {rec.avgPesticide !== "N/A" && <span className="px-2 py-0.5 rounded bg-muted font-medium">🛡️ Pesticide: {rec.avgPesticide}</span>}
                       </div>
                     </div>
                   </div>

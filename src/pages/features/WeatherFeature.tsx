@@ -6,56 +6,61 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const mockWeatherData = {
-  temperature: 32,
-  humidity: 65,
-  windSpeed: 12,
-  condition: "Partly Cloudy",
-  rainfall: 2.5,
-  forecast: [
-    { day: "Tomorrow", temp: 30, condition: "Sunny" },
-    { day: "Day 3", temp: 28, condition: "Rain" },
-    { day: "Day 4", temp: 31, condition: "Cloudy" },
-  ],
-  suggestedCrops: [
-    { name: "Rice (Paddy)", reason: "High humidity and warm temperature are ideal for paddy cultivation." },
-    { name: "Sugarcane", reason: "Current moisture levels support sugarcane growth." },
-    { name: "Cotton", reason: "Warm weather with moderate wind is suitable for cotton." },
-  ],
-};
+interface WeatherData {
+  temperature: number;
+  humidity: number;
+  windSpeed: number;
+  condition: string;
+  rainfall: number;
+  forecast: { day: string; temp: number; condition: string }[];
+  suggestedCrops: { name: string; reason: string }[];
+}
 
 const WeatherFeature = () => {
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
-  const [weatherData, setWeatherData] = useState<typeof mockWeatherData | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const { toast } = useToast();
+
+  const fetchWeather = async (loc: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("weather-crop-suggest", {
+        body: { location: loc },
+      });
+      if (error) throw error;
+      setWeatherData(data);
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: "Failed to fetch weather data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = () => {
     if (!location.trim()) return;
-    setLoading(true);
-    setTimeout(() => {
-      setWeatherData(mockWeatherData);
-      setLoading(false);
-    }, 1500);
+    fetchWeather(location.trim());
   };
 
   const handleUseCurrentLocation = () => {
     setLocation("Detecting location...");
-    setLoading(true);
     navigator.geolocation?.getCurrentPosition(
-      () => {
-        setLocation("Hyderabad, Telangana");
-        setTimeout(() => {
-          setWeatherData(mockWeatherData);
-          setLoading(false);
-        }, 1000);
+      (pos) => {
+        const loc = `Lat ${pos.coords.latitude.toFixed(2)}, Lng ${pos.coords.longitude.toFixed(2)}`;
+        setLocation(loc);
+        fetchWeather(loc);
       },
       () => {
         setLocation("Hyderabad, Telangana");
-        setTimeout(() => {
-          setWeatherData(mockWeatherData);
-          setLoading(false);
-        }, 1000);
+        fetchWeather("Hyderabad, Telangana");
       }
     );
   };
@@ -87,13 +92,20 @@ const WeatherFeature = () => {
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
               </Button>
             </div>
-            <Button variant="outline" className="w-full gap-2" onClick={handleUseCurrentLocation}>
+            <Button variant="outline" className="w-full gap-2" onClick={handleUseCurrentLocation} disabled={loading}>
               <MapPin className="h-4 w-4" /> Use My Current Location
             </Button>
           </CardContent>
         </Card>
 
-        {weatherData && (
+        {loading && (
+          <div className="text-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-3" />
+            <p className="text-muted-foreground">Fetching weather data for {location}...</p>
+          </div>
+        )}
+
+        {weatherData && !loading && (
           <div className="space-y-6 animate-fade-in">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Card>

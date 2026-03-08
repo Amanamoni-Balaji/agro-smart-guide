@@ -1,44 +1,25 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Send, Bot, User } from "lucide-react";
+import { Mic, MicOff, Send, Bot, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
-  role: "user" | "bot";
+  role: "user" | "assistant";
   text: string;
 }
 
-const botResponses: Record<string, string> = {
-  default: "I can help you with crop recommendations, disease identification, and farming advice. Try asking about a specific crop or farming issue!",
-  rice: "🌾 Rice grows best in warm, humid climates with temperatures between 20-35°C. For your region, consider varieties like IR-64 or Samba Masuri. Sowing season: June-July (Kharif). Ensure standing water of 2-3 cm during growth.",
-  wheat: "🌾 Wheat thrives in cool weather (10-25°C). Best sown in November. Recommended varieties: HD-2967, PBW-550. Needs 4-5 irrigations. Apply Urea + DAP at sowing time.",
-  cotton: "🌿 Cotton needs warm weather (25-35°C) and black soil. Sow in June. Use BT Cotton varieties for pest resistance. Avoid waterlogging. Apply potash during flowering.",
-  disease: "🔬 For disease diagnosis, please go to our Disease Prediction page and upload a photo of the affected crop. Our AI will identify the disease, its stage, and suggest treatments.",
-  fertilizer: "🧪 Fertilizer needs depend on your crop and soil type. Generally: Urea for nitrogen, DAP for phosphorus, MOP for potassium. Get detailed suggestions from our Fertilizer Feature page.",
-  weather: "🌤 Weather-based recommendations are available on our Weather Feature page. Enter your location to get real-time weather data and crop suggestions.",
-};
-
-const getResponse = (input: string): string => {
-  const lower = input.toLowerCase();
-  if (lower.includes("rice") || lower.includes("paddy")) return botResponses.rice;
-  if (lower.includes("wheat") || lower.includes("gahu")) return botResponses.wheat;
-  if (lower.includes("cotton") || lower.includes("kapas")) return botResponses.cotton;
-  if (lower.includes("disease") || lower.includes("roga") || lower.includes("bimari")) return botResponses.disease;
-  if (lower.includes("fertilizer") || lower.includes("khad")) return botResponses.fertilizer;
-  if (lower.includes("weather") || lower.includes("mausam")) return botResponses.weather;
-  return botResponses.default;
-};
-
 const VoiceInputFeature = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "bot", text: "🙏 Namaste! I'm your farming assistant. You can type or use the mic to speak. Ask me about crops, diseases, fertilizers, or weather!" },
+    { role: "assistant", text: "🙏 Namaste! I'm your AI farming assistant. You can type or use the mic to speak. Ask me about crops, diseases, fertilizers, weather, or any farming question!" },
   ]);
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -46,22 +27,44 @@ const VoiceInputFeature = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return;
     const userMsg: Message = { role: "user", text: text.trim() };
-    setMessages((prev) => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInput("");
+    setIsLoading(true);
 
-    setTimeout(() => {
-      const botMsg: Message = { role: "bot", text: getResponse(text) };
+    try {
+      // Send conversation history for context
+      const chatHistory = updatedMessages.map((m) => ({
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: m.text,
+      }));
+
+      const { data, error } = await supabase.functions.invoke("farming-chat", {
+        body: { messages: chatHistory },
+      });
+
+      if (error) throw error;
+
+      const botMsg: Message = { role: "assistant", text: data.reply };
       setMessages((prev) => [...prev, botMsg]);
-    }, 800);
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: "⚠️ Sorry, I couldn't process that. Please try again." },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleListening = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setMessages((prev) => [...prev, { role: "bot", text: "⚠️ Speech recognition is not supported in this browser. Please try Chrome or Edge." }]);
+      setMessages((prev) => [...prev, { role: "assistant", text: "⚠️ Speech recognition is not supported in this browser. Please try Chrome or Edge." }]);
       return;
     }
 
@@ -83,8 +86,12 @@ const VoiceInputFeature = () => {
       setIsListening(false);
     };
 
-    recognition.onerror = () => {
+    recognition.onerror = (event: any) => {
+      console.error("Speech error:", event.error);
       setIsListening(false);
+      if (event.error === "not-allowed") {
+        setMessages((prev) => [...prev, { role: "assistant", text: "⚠️ Microphone access denied. Please allow microphone permission in your browser settings." }]);
+      }
     };
 
     recognition.onend = () => {
@@ -106,7 +113,7 @@ const VoiceInputFeature = () => {
             <Mic className="h-10 w-10 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-heading font-extrabold">Voice-Based Farming Assistant</h1>
-          <p className="text-muted-foreground text-sm mt-1">Speak or type to get crop advice in your language</p>
+          <p className="text-muted-foreground text-sm mt-1">Speak or type to get AI-powered crop advice</p>
         </div>
 
         <Card className="flex-1 flex flex-col min-h-[400px]">
@@ -114,12 +121,12 @@ const VoiceInputFeature = () => {
             <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-1" style={{ maxHeight: "400px" }}>
               {messages.map((msg, i) => (
                 <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  {msg.role === "bot" && (
+                  {msg.role === "assistant" && (
                     <div className="rounded-full p-1.5 bg-primary/10 h-fit">
                       <Bot className="h-4 w-4 text-primary" />
                     </div>
                   )}
-                  <div className={`max-w-[80%] rounded-lg px-4 py-2.5 text-sm ${
+                  <div className={`max-w-[80%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-wrap ${
                     msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                   }`}>
                     {msg.text}
@@ -131,6 +138,16 @@ const VoiceInputFeature = () => {
                   )}
                 </div>
               ))}
+              {isLoading && (
+                <div className="flex gap-2 justify-start">
+                  <div className="rounded-full p-1.5 bg-primary/10 h-fit">
+                    <Bot className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="bg-muted rounded-lg px-4 py-2.5 text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                </div>
+              )}
               <div ref={chatEndRef} />
             </div>
 
@@ -149,8 +166,9 @@ const VoiceInputFeature = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
                 className="flex-1"
+                disabled={isLoading}
               />
-              <Button onClick={() => sendMessage(input)} disabled={!input.trim()} className="gradient-hero border-0">
+              <Button onClick={() => sendMessage(input)} disabled={!input.trim() || isLoading} className="gradient-hero border-0">
                 <Send className="h-4 w-4" />
               </Button>
             </div>

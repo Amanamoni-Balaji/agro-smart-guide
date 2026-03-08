@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Leaf, FlaskConical } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 const modes = [
   {

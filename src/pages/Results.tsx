@@ -3,7 +3,7 @@ import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircl
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { recommendCrops } from "@/data/cropDataset";
+import { recommendCropsFromDataset } from "@/data/cropDataset";
 import { useMemo } from "react";
 
 const mockDiseaseResult = {
@@ -28,7 +28,7 @@ const Results = () => {
 
   const recommendations = useMemo(() => {
     if (isDisease || !state) return [];
-    return recommendCrops({
+    return recommendCropsFromDataset({
       nitrogen: state.nitrogen ? parseFloat(state.nitrogen) : undefined,
       phosphorus: state.phosphorus ? parseFloat(state.phosphorus) : undefined,
       potassium: state.potassium ? parseFloat(state.potassium) : undefined,
@@ -36,8 +36,6 @@ const Results = () => {
       humidity: state.humidity ? parseFloat(state.humidity) : undefined,
       ph: state.ph ? parseFloat(state.ph) : undefined,
       rainfall: state.rainfall ? parseFloat(state.rainfall) : undefined,
-      soil: state.soil,
-      season: state.season,
     });
   }, [state, isDisease]);
 
@@ -99,7 +97,7 @@ const Results = () => {
                   <Sprout className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-heading font-extrabold">{topCrop.crop.name}</h1>
+                  <h1 className="text-2xl font-heading font-extrabold">{topCrop.displayName}</h1>
                   <p className="text-sm text-muted-foreground">Confidence: {topCrop.confidence}</p>
                 </div>
               </div>
@@ -118,7 +116,7 @@ const Results = () => {
                       <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold mt-0.5">{i + 2}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className="font-semibold text-sm">{rec.crop.name}</p>
+                          <p className="font-semibold text-sm">{rec.displayName}</p>
                           <span className="text-xs text-muted-foreground">{rec.confidence}</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">{rec.reason}</p>
@@ -132,14 +130,14 @@ const Results = () => {
             {/* Crop Schedule */}
             <div className="gradient-card rounded-xl border border-border shadow-card p-8">
               <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-[hsl(var(--agro-gold))]" /> Crop Schedule — {topCrop.crop.name}
+                <Calendar className="h-5 w-5 text-[hsl(var(--agro-gold))]" /> Crop Schedule — {topCrop.displayName}
               </h2>
               <div className="space-y-4">
-                {topCrop.crop.schedule.map((s, i) => (
+                {topCrop.details.schedule.map((s, i) => (
                   <div key={i} className="flex gap-4 items-start">
                     <div className="flex flex-col items-center">
                       <div className="w-3 h-3 rounded-full bg-primary" />
-                      {i < topCrop.crop.schedule.length - 1 && <div className="w-0.5 h-10 bg-border" />}
+                      {i < topCrop.details.schedule.length - 1 && <div className="w-0.5 h-10 bg-border" />}
                     </div>
                     <div>
                       <p className="font-semibold text-sm">{s.step} <span className="text-muted-foreground font-normal">— {s.time}</span></p>
@@ -155,7 +153,7 @@ const Results = () => {
               <h2 className="text-lg font-heading font-bold mb-2 flex items-center gap-2">
                 <Sprout className="h-5 w-5 text-secondary" /> Next Crop Rotation
               </h2>
-              <p className="text-sm text-muted-foreground">{topCrop.crop.nextCrop}</p>
+              <p className="text-sm text-muted-foreground">{topCrop.details.nextCrop}</p>
             </div>
 
             {/* Recommended Fertilizers */}
@@ -164,7 +162,7 @@ const Results = () => {
                 <FlaskConical className="h-5 w-5 text-[hsl(var(--agro-earth))]" /> Recommended Fertilizers
               </h2>
               <ul className="space-y-1">
-                {topCrop.crop.fertilizers.map((f) => (
+                {topCrop.details.fertilizers.map((f) => (
                   <li key={f} className="text-sm text-muted-foreground">• {f}</li>
                 ))}
               </ul>

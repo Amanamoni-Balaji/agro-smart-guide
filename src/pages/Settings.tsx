@@ -30,11 +30,6 @@ const Settings = () => {
         <h1 className="text-2xl font-heading font-extrabold mb-2 flex items-center gap-2">
           <Globe className="h-6 w-6 text-primary" /> {t('settings')}
         </h1>
-        <p className="text-sm text-muted-foreground mb-8">22 languages supported including all scheduled Indian languages</p>
-        </Button>
-        <h1 className="text-2xl font-heading font-extrabold mb-8 flex items-center gap-2">
-          <Globe className="h-6 w-6 text-primary" /> {t('settings')}
-        </h1>
         <div className="gradient-card rounded-xl border border-border shadow-card p-8 space-y-6 animate-fade-in">
           <div>
             <Label className="text-base font-semibold">{t('appLanguage')}</Label>

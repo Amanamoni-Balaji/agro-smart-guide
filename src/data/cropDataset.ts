@@ -1,42 +1,16 @@
-// Auto-generated from user-provided Crop_recommendation.csv dataset
-// Each crop's optimal ranges are derived from the real dataset (min-max per parameter)
+// KNN-based crop recommendation using the real CSV dataset
+// The CSV is loaded at runtime from public/data/crop_recommendation.csv
 
-export interface CropDataEntry {
+export interface CropRecord {
+  N: number;
+  P: number;
+  K: number;
+  temperature: number;
+  humidity: number;
+  ph: number;
+  rainfall: number;
   label: string;
-  nitrogen: [number, number];
-  phosphorus: [number, number];
-  potassium: [number, number];
-  temperature: [number, number];
-  humidity: [number, number];
-  ph: [number, number];
-  rainfall: [number, number];
 }
-
-// Ranges extracted from the CSV dataset (100 samples per crop, min-max values)
-export const cropRanges: CropDataEntry[] = [
-  { label: "rice", nitrogen: [60, 99], phosphorus: [35, 60], potassium: [35, 60], temperature: [20, 27], humidity: [80, 85], ph: [5.0, 7.9], rainfall: [183, 299] },
-  { label: "maize", nitrogen: [55, 99], phosphorus: [35, 60], potassium: [15, 25], temperature: [18, 27], humidity: [55, 75], ph: [5.5, 7.0], rainfall: [60, 110] },
-  { label: "chickpea", nitrogen: [20, 50], phosphorus: [55, 80], potassium: [72, 82], temperature: [17, 21], humidity: [14, 20], ph: [7.0, 7.5], rainfall: [65, 95] },
-  { label: "kidneybeans", nitrogen: [0, 30], phosphorus: [55, 70], potassium: [18, 28], temperature: [15, 22], humidity: [18, 25], ph: [5.5, 6.0], rainfall: [60, 150] },
-  { label: "pigeonpeas", nitrogen: [0, 40], phosphorus: [55, 75], potassium: [18, 28], temperature: [18, 36], humidity: [30, 70], ph: [4.5, 7.5], rainfall: [120, 200] },
-  { label: "mothbeans", nitrogen: [0, 25], phosphorus: [40, 55], potassium: [15, 25], temperature: [24, 32], humidity: [40, 65], ph: [3.5, 8.0], rainfall: [30, 55] },
-  { label: "mungbean", nitrogen: [15, 30], phosphorus: [40, 60], potassium: [18, 25], temperature: [27, 30], humidity: [80, 90], ph: [6.0, 7.2], rainfall: [40, 60] },
-  { label: "blackgram", nitrogen: [25, 60], phosphorus: [55, 80], potassium: [12, 25], temperature: [25, 35], humidity: [55, 72], ph: [6.5, 8.0], rainfall: [55, 75] },
-  { label: "lentil", nitrogen: [12, 40], phosphorus: [55, 80], potassium: [12, 20], temperature: [18, 30], humidity: [55, 70], ph: [6.5, 8.0], rainfall: [35, 55] },
-  { label: "pomegranate", nitrogen: [0, 40], phosphorus: [5, 30], potassium: [35, 42], temperature: [18, 32], humidity: [85, 96], ph: [5.5, 7.2], rainfall: [100, 115] },
-  { label: "banana", nitrogen: [75, 120], phosphorus: [70, 100], potassium: [45, 55], temperature: [25, 30], humidity: [75, 85], ph: [5.5, 6.8], rainfall: [90, 115] },
-  { label: "mango", nitrogen: [0, 35], phosphorus: [15, 45], potassium: [25, 35], temperature: [27, 36], humidity: [45, 60], ph: [4.9, 7.5], rainfall: [89, 105] },
-  { label: "grapes", nitrogen: [15, 40], phosphorus: [120, 145], potassium: [195, 210], temperature: [8, 42], humidity: [80, 84], ph: [5.5, 6.8], rainfall: [60, 75] },
-  { label: "watermelon", nitrogen: [80, 130], phosphorus: [15, 30], potassium: [45, 60], temperature: [24, 27], humidity: [80, 90], ph: [6.0, 6.8], rainfall: [40, 60] },
-  { label: "muskmelon", nitrogen: [80, 120], phosphorus: [5, 20], potassium: [45, 55], temperature: [27, 30], humidity: [90, 95], ph: [6.0, 6.8], rainfall: [20, 30] },
-  { label: "apple", nitrogen: [5, 40], phosphorus: [125, 150], potassium: [195, 210], temperature: [21, 24], humidity: [90, 95], ph: [5.5, 6.5], rainfall: [110, 130] },
-  { label: "orange", nitrogen: [10, 40], phosphorus: [5, 30], potassium: [5, 15], temperature: [10, 35], humidity: [90, 95], ph: [6.0, 8.0], rainfall: [100, 115] },
-  { label: "papaya", nitrogen: [35, 65], phosphorus: [45, 70], potassium: [48, 58], temperature: [23, 44], humidity: [90, 95], ph: [6.5, 7.0], rainfall: [140, 250] },
-  { label: "coconut", nitrogen: [0, 40], phosphorus: [5, 30], potassium: [25, 35], temperature: [25, 30], humidity: [90, 99], ph: [5.5, 6.5], rainfall: [130, 230] },
-  { label: "cotton", nitrogen: [100, 150], phosphorus: [35, 60], potassium: [15, 25], temperature: [22, 27], humidity: [75, 85], ph: [6.8, 8.0], rainfall: [60, 115] },
-  { label: "jute", nitrogen: [60, 100], phosphorus: [35, 55], potassium: [35, 45], temperature: [23, 27], humidity: [70, 90], ph: [6.0, 7.5], rainfall: [150, 200] },
-  { label: "coffee", nitrogen: [90, 120], phosphorus: [15, 40], potassium: [25, 35], temperature: [23, 28], humidity: [50, 70], ph: [6.0, 7.0], rainfall: [120, 195] },
-];
 
 // Display-friendly names
 const cropDisplayNames: Record<string, string> = {
@@ -64,7 +38,6 @@ const cropDisplayNames: Record<string, string> = {
   coffee: "Coffee",
 };
 
-// Crop schedules, fertilizers, and rotation suggestions
 const cropDetails: Record<string, { schedule: { step: string; time: string; desc: string }[]; fertilizers: string[]; nextCrop: string }> = {
   rice: {
     schedule: [
@@ -348,11 +321,37 @@ export function getCropDetails(label: string) {
   };
 }
 
+let cachedData: CropRecord[] | null = null;
+
+export async function loadCropData(): Promise<CropRecord[]> {
+  if (cachedData) return cachedData;
+
+  const res = await fetch("/data/crop_recommendation.csv");
+  const text = await res.text();
+  const lines = text.trim().split("\n");
+
+  cachedData = lines.slice(1).map((line) => {
+    const [N, P, K, temperature, humidity, ph, rainfall, label] = line.split(",");
+    return {
+      N: parseFloat(N),
+      P: parseFloat(P),
+      K: parseFloat(K),
+      temperature: parseFloat(temperature),
+      humidity: parseFloat(humidity),
+      ph: parseFloat(ph),
+      rainfall: parseFloat(rainfall),
+      label: label.trim(),
+    };
+  });
+
+  return cachedData;
+}
+
 /**
- * Recommend crops based on input N, P, K, temperature, humidity, pH, rainfall.
- * Uses distance-from-optimal-range scoring derived from real CSV dataset.
+ * KNN-based crop recommendation.
+ * Normalizes features, finds K nearest neighbors, votes by crop label.
  */
-export function recommendCropsFromDataset(input: {
+export async function recommendCropsKNN(input: {
   nitrogen?: number;
   phosphorus?: number;
   potassium?: number;
@@ -360,63 +359,75 @@ export function recommendCropsFromDataset(input: {
   humidity?: number;
   ph?: number;
   rainfall?: number;
-}): { label: string; displayName: string; score: number; confidence: string; reason: string; details: ReturnType<typeof getCropDetails> }[] {
-  const results = cropRanges.map((crop) => {
-    let totalScore = 0;
-    let paramCount = 0;
-    const reasons: string[] = [];
+}, k = 10): Promise<{ label: string; displayName: string; confidence: string; reason: string; details: ReturnType<typeof getCropDetails> }[]> {
+  const data = await loadCropData();
 
-    const checkRange = (
-      value: number | undefined,
-      range: [number, number],
-      paramName: string,
-      unit: string
-    ) => {
-      if (value === undefined || isNaN(value)) return;
-      paramCount++;
-      const mid = (range[0] + range[1]) / 2;
-      const spread = (range[1] - range[0]) / 2 || 1;
+  // Compute min/max for normalization
+  const features: (keyof CropRecord)[] = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"];
+  const inputKeys = ["nitrogen", "phosphorus", "potassium", "temperature", "humidity", "ph", "rainfall"] as const;
 
-      if (value >= range[0] && value <= range[1]) {
-        const closeness = 1 - Math.abs(value - mid) / spread;
-        totalScore += closeness * 10;
-        reasons.push(`${paramName} (${value}${unit}) is in optimal range (${range[0]}-${range[1]}${unit})`);
-      } else {
-        const dist = value < range[0] ? range[0] - value : value - range[1];
-        const penalty = Math.min(dist / spread, 3);
-        totalScore += Math.max(0, 10 - penalty * 5);
-        if (dist / spread < 0.5) {
-          reasons.push(`${paramName} (${value}${unit}) is close to optimal (${range[0]}-${range[1]}${unit})`);
-        }
-      }
-    };
-
-    checkRange(input.nitrogen, crop.nitrogen, "Nitrogen", " kg/ha");
-    checkRange(input.phosphorus, crop.phosphorus, "Phosphorus", " kg/ha");
-    checkRange(input.potassium, crop.potassium, "Potassium", " kg/ha");
-    checkRange(input.temperature, crop.temperature, "Temperature", "°C");
-    checkRange(input.humidity, crop.humidity, "Humidity", "%");
-    checkRange(input.ph, crop.ph, "pH", "");
-    checkRange(input.rainfall, crop.rainfall, "Rainfall", " mm");
-
-    const maxScore = paramCount * 10;
-    const normalizedScore = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
-
-    const confidence =
-      normalizedScore >= 85 ? "Very High" :
-      normalizedScore >= 70 ? "High" :
-      normalizedScore >= 55 ? "Moderate" :
-      normalizedScore >= 40 ? "Low" : "Very Low";
-
-    return {
-      label: crop.label,
-      displayName: getDisplayName(crop.label),
-      score: normalizedScore,
-      confidence: `${Math.round(normalizedScore)}%`,
-      reason: reasons.slice(0, 4).join(". ") + (reasons.length > 0 ? "." : ""),
-      details: getCropDetails(crop.label),
-    };
+  const mins: number[] = [];
+  const maxs: number[] = [];
+  features.forEach((f) => {
+    const vals = data.map((d) => d[f] as number);
+    mins.push(Math.min(...vals));
+    maxs.push(Math.max(...vals));
   });
 
-  return results.sort((a, b) => b.score - a.score).slice(0, 5);
+  // Build input vector (normalized)
+  const inputVec = inputKeys.map((key, i) => {
+    const val = input[key];
+    if (val === undefined || isNaN(val)) return 0.5; // default to center
+    const range = maxs[i] - mins[i] || 1;
+    return (val - mins[i]) / range;
+  });
+
+  // Compute distances
+  const distances = data.map((record) => {
+    let dist = 0;
+    features.forEach((f, i) => {
+      const range = maxs[i] - mins[i] || 1;
+      const normVal = ((record[f] as number) - mins[i]) / range;
+      const diff = inputVec[i] - normVal;
+      dist += diff * diff;
+    });
+    return { record, dist: Math.sqrt(dist) };
+  });
+
+  distances.sort((a, b) => a.dist - b.dist);
+  const neighbors = distances.slice(0, k);
+
+  // Vote by label (weighted by inverse distance)
+  const votes: Record<string, number> = {};
+  neighbors.forEach(({ record, dist }) => {
+    const weight = 1 / (dist + 0.001);
+    votes[record.label] = (votes[record.label] || 0) + weight;
+  });
+
+  const totalWeight = Object.values(votes).reduce((a, b) => a + b, 0);
+  const sorted = Object.entries(votes)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  return sorted.map(([label, weight]) => {
+    const pct = Math.round((weight / totalWeight) * 100);
+    // Find closest neighbor of this crop to build reason
+    const closest = neighbors.find((n) => n.record.label === label)!;
+    const r = closest.record;
+
+    const reasons: string[] = [];
+    if (input.nitrogen !== undefined) reasons.push(`N=${input.nitrogen} (dataset avg for ${getDisplayName(label)}: ~${Math.round(r.N)})`);
+    if (input.phosphorus !== undefined) reasons.push(`P=${input.phosphorus} (match: ~${Math.round(r.P)})`);
+    if (input.potassium !== undefined) reasons.push(`K=${input.potassium} (match: ~${Math.round(r.K)})`);
+    if (input.temperature !== undefined) reasons.push(`Temp=${input.temperature}°C (match: ~${r.temperature.toFixed(1)}°C)`);
+    if (input.rainfall !== undefined) reasons.push(`Rainfall=${input.rainfall}mm (match: ~${r.rainfall.toFixed(0)}mm)`);
+
+    return {
+      label,
+      displayName: getDisplayName(label),
+      confidence: `${pct}%`,
+      reason: `Closest dataset match: ${reasons.slice(0, 4).join(", ")}.`,
+      details: getCropDetails(label),
+    };
+  });
 }

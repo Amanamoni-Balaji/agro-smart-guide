@@ -431,3 +431,115 @@ export async function recommendCropsKNN(input: {
     };
   });
 }
+
+// ===== Simple Mode: Crop Production Dataset =====
+
+export interface CropProductionRecord {
+  state: string;
+  district: string;
+  season: string;
+  crop: string;
+  area: number;
+  production: number;
+}
+
+let cachedProductionData: CropProductionRecord[] | null = null;
+
+export async function loadCropProductionData(): Promise<CropProductionRecord[]> {
+  if (cachedProductionData) return cachedProductionData;
+
+  const res = await fetch("/data/crop_production.csv");
+  const text = await res.text();
+  const lines = text.trim().split("\n");
+
+  cachedProductionData = [];
+  for (let i = 1; i < lines.length; i++) {
+    // CSV format: index,State_Name,District_Name,Crop_Year,Season,Crop,Area,Production
+    const parts = lines[i].split(",");
+    if (parts.length < 8) continue;
+    const area = parseFloat(parts[6]);
+    const production = parseFloat(parts[7]);
+    if (isNaN(area) || isNaN(production)) continue;
+    cachedProductionData.push({
+      state: parts[1].trim(),
+      district: parts[2].trim(),
+      season: parts[4].trim(),
+      crop: parts[5].trim(),
+      area,
+      production,
+    });
+  }
+
+  return cachedProductionData;
+}
+
+export async function getStates(): Promise<string[]> {
+  const data = await loadCropProductionData();
+  return [...new Set(data.map((d) => d.state))].sort();
+}
+
+export async function getDistricts(state: string): Promise<string[]> {
+  const data = await loadCropProductionData();
+  return [...new Set(data.filter((d) => d.state === state).map((d) => d.district))].sort();
+}
+
+export async function getSeasons(): Promise<string[]> {
+  const data = await loadCropProductionData();
+  return [...new Set(data.map((d) => d.season))].sort();
+}
+
+export type SimpleRecommendation = {
+  crop: string;
+  totalProduction: number;
+  totalArea: number;
+  productivity: string;
+  confidence: string;
+  reason: string;
+  details: ReturnType<typeof getCropDetails>;
+};
+
+export async function recommendCropsSimple(input: {
+  state: string;
+  district?: string;
+  season?: string;
+}): Promise<SimpleRecommendation[]> {
+  const data = await loadCropProductionData();
+
+  let filtered = data.filter((d) => d.state === input.state);
+  if (input.district) filtered = filtered.filter((d) => d.district === input.district);
+  if (input.season) filtered = filtered.filter((d) => d.season === input.season);
+
+  if (filtered.length === 0) return [];
+
+  // Aggregate by crop
+  const cropAgg: Record<string, { totalProd: number; totalArea: number; count: number }> = {};
+  filtered.forEach((d) => {
+    if (!cropAgg[d.crop]) cropAgg[d.crop] = { totalProd: 0, totalArea: 0, count: 0 };
+    cropAgg[d.crop].totalProd += d.production;
+    cropAgg[d.crop].totalArea += d.area;
+    cropAgg[d.crop].count += 1;
+  });
+
+  // Sort by total production (descending)
+  const sorted = Object.entries(cropAgg)
+    .sort((a, b) => b[1].totalProd - a[1].totalProd)
+    .slice(0, 8);
+
+  const maxProd = sorted[0]?.[1].totalProd || 1;
+
+  return sorted.map(([crop, agg]) => {
+    const pct = Math.round((agg.totalProd / maxProd) * 100);
+    const productivity = agg.totalArea > 0 ? (agg.totalProd / agg.totalArea).toFixed(1) : "N/A";
+    const labelKey = crop.toLowerCase().replace(/[^a-z]/g, "");
+
+    return {
+      crop,
+      totalProduction: Math.round(agg.totalProd),
+      totalArea: Math.round(agg.totalArea),
+      productivity: `${productivity} units/ha`,
+      confidence: `${pct}%`,
+      reason: `Grown across ${agg.count} records in ${input.district || input.state}. Total production: ${Math.round(agg.totalProd).toLocaleString()} tonnes over ${Math.round(agg.totalArea).toLocaleString()} ha.`,
+      details: getCropDetails(labelKey),
+    };
+  });
+}

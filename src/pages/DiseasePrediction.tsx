@@ -40,7 +40,7 @@ const DiseasePrediction = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header isLoggedIn onLogout={() => navigate("/")} />
+      <Header />
       <main className="flex-1 container py-12 max-w-lg">
         <h1 className="text-2xl font-heading font-extrabold text-center mb-2">Crop Disease Prediction</h1>
         <p className="text-center text-muted-foreground mb-8">Upload or capture a photo of the affected crop</p>

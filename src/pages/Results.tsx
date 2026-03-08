@@ -43,7 +43,7 @@ const Results = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header isLoggedIn onLogout={() => navigate("/")} />
+      <Header />
       <main className="flex-1 container py-12 max-w-2xl">
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 gap-2">
           <ArrowLeft className="h-4 w-4" /> Back

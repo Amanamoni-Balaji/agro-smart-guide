@@ -1,25 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Sprout, Bug, Calendar, FlaskConical, AlertCircle, CheckCircle2, Medal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
-// Mock results for demonstration
-const mockCropResult = {
-  crop: "Rice (Paddy)",
-  confidence: "92%",
-  reason: "Based on your black soil, kharif season, and high humidity conditions, Rice is the ideal crop.",
-  nextCrop: "Wheat or Mustard (Rabi season)",
-  schedule: [
-    { step: "Land Preparation", time: "Week 1-2", desc: "Plough and level the field, add organic manure." },
-    { step: "Sowing / Transplanting", time: "Week 3", desc: "Sow seeds in nursery or transplant seedlings." },
-    { step: "First Fertilizer", time: "Week 4", desc: "Apply Urea at 40 kg/acre." },
-    { step: "Weeding", time: "Week 5-6", desc: "Remove weeds manually or apply herbicide." },
-    { step: "Irrigation", time: "Week 6-12", desc: "Maintain 2-3 cm standing water." },
-    { step: "Harvest", time: "Week 16-18", desc: "Harvest when grains turn golden yellow." },
-  ],
-  fertilizers: ["Urea (46-0-0)", "DAP (18-46-0)", "MOP (0-0-60)"],
-};
+import { recommendCrops } from "@/data/cropDataset";
+import { useMemo } from "react";
 
 const mockDiseaseResult = {
   disease: "Bacterial Leaf Blight",
@@ -40,6 +25,23 @@ const Results = () => {
   const location = useLocation();
   const state = location.state as any;
   const isDisease = state?.mode === "disease";
+
+  const recommendations = useMemo(() => {
+    if (isDisease || !state) return [];
+    return recommendCrops({
+      nitrogen: state.nitrogen ? parseFloat(state.nitrogen) : undefined,
+      phosphorus: state.phosphorus ? parseFloat(state.phosphorus) : undefined,
+      potassium: state.potassium ? parseFloat(state.potassium) : undefined,
+      temperature: state.temperature ? parseFloat(state.temperature) : undefined,
+      humidity: state.humidity ? parseFloat(state.humidity) : undefined,
+      ph: state.ph ? parseFloat(state.ph) : undefined,
+      rainfall: state.rainfall ? parseFloat(state.rainfall) : undefined,
+      soil: state.soil,
+      season: state.season,
+    });
+  }, [state, isDisease]);
+
+  const topCrop = recommendations[0];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -88,31 +90,56 @@ const Results = () => {
               <p className="text-sm text-muted-foreground">{mockDiseaseResult.fertilizer}</p>
             </div>
           </div>
-        ) : (
+        ) : topCrop ? (
           <div className="space-y-6 animate-fade-in">
+            {/* Top Recommendation */}
             <div className="gradient-card rounded-xl border border-border shadow-card p-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <Sprout className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-heading font-extrabold">{mockCropResult.crop}</h1>
-                  <p className="text-sm text-muted-foreground">Confidence: {mockCropResult.confidence}</p>
+                  <h1 className="text-2xl font-heading font-extrabold">{topCrop.crop.name}</h1>
+                  <p className="text-sm text-muted-foreground">Confidence: {topCrop.confidence}</p>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">{mockCropResult.reason}</p>
+              <p className="text-sm text-muted-foreground">{topCrop.reason}</p>
             </div>
 
+            {/* Other Recommendations */}
+            {recommendations.length > 1 && (
+              <div className="gradient-card rounded-xl border border-border shadow-card p-8">
+                <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
+                  <Medal className="h-5 w-5 text-[hsl(var(--agro-gold))]" /> Other Suitable Crops
+                </h2>
+                <div className="space-y-3">
+                  {recommendations.slice(1).map((rec, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold mt-0.5">{i + 2}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold text-sm">{rec.crop.name}</p>
+                          <span className="text-xs text-muted-foreground">{rec.confidence}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{rec.reason}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Crop Schedule */}
             <div className="gradient-card rounded-xl border border-border shadow-card p-8">
               <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-agro-gold" /> Crop Schedule (Sow to Harvest)
+                <Calendar className="h-5 w-5 text-[hsl(var(--agro-gold))]" /> Crop Schedule — {topCrop.crop.name}
               </h2>
               <div className="space-y-4">
-                {mockCropResult.schedule.map((s, i) => (
+                {topCrop.crop.schedule.map((s, i) => (
                   <div key={i} className="flex gap-4 items-start">
                     <div className="flex flex-col items-center">
                       <div className="w-3 h-3 rounded-full bg-primary" />
-                      {i < mockCropResult.schedule.length - 1 && <div className="w-0.5 h-10 bg-border" />}
+                      {i < topCrop.crop.schedule.length - 1 && <div className="w-0.5 h-10 bg-border" />}
                     </div>
                     <div>
                       <p className="font-semibold text-sm">{s.step} <span className="text-muted-foreground font-normal">— {s.time}</span></p>
@@ -123,23 +150,29 @@ const Results = () => {
               </div>
             </div>
 
+            {/* Next Crop Rotation */}
             <div className="gradient-card rounded-xl border border-border shadow-card p-8">
               <h2 className="text-lg font-heading font-bold mb-2 flex items-center gap-2">
                 <Sprout className="h-5 w-5 text-secondary" /> Next Crop Rotation
               </h2>
-              <p className="text-sm text-muted-foreground">{mockCropResult.nextCrop}</p>
+              <p className="text-sm text-muted-foreground">{topCrop.crop.nextCrop}</p>
             </div>
 
+            {/* Recommended Fertilizers */}
             <div className="gradient-card rounded-xl border border-border shadow-card p-8">
               <h2 className="text-lg font-heading font-bold mb-2 flex items-center gap-2">
-                <FlaskConical className="h-5 w-5 text-agro-earth" /> Recommended Fertilizers
+                <FlaskConical className="h-5 w-5 text-[hsl(var(--agro-earth))]" /> Recommended Fertilizers
               </h2>
               <ul className="space-y-1">
-                {mockCropResult.fertilizers.map((f) => (
+                {topCrop.crop.fertilizers.map((f) => (
                   <li key={f} className="text-sm text-muted-foreground">• {f}</li>
                 ))}
               </ul>
             </div>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No recommendations found. Please go back and enter your crop parameters.</p>
           </div>
         )}
       </main>
